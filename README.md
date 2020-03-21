@@ -57,3 +57,10 @@ I'd also support an alternative attribute format which allows for both 16 foregr
 The VDC-II core could conceivably be expanded to support sprites as well, perhaps using an interface not unlike the TMS9918A VDP.
 This will be very nice for, e.g., supporting mouse pointers and text cursors while in bitmapped mode (e.g., GEOS/128).
 
+## Resources
+These are some handy references and resources I've found to help guide my development.
+These might be of interest to you as well.
+
+- https://www.retrobrewcomputers.org/lib/exe/fetch.php?media=boards:ecb:cvdu:8563notes.txt
+- [Commodore 128 Programmer's Reference Guide](https://www.pagetable.com/?p=620)
+
