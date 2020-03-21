@@ -23,6 +23,11 @@ And looking through the C128's Programmers Reference Manual on how to code for t
 I saw that much of the CGIA's feature set was already present in the VDC.  Not everything, but most things for sure!
 So, I got to thinking, instead of using the CGIA as the basis,
 maybe I can create a version of the VDC chip which can drive a VGA monitor, flexibly.
+After all,
+the [RomWBW HBIOS](https://github.com/wwarthen/RomWBW/blob/master/Source/HBIOS/cvdu.asm)
+software already has a VDC driver available for it, so porting software should be much easier.
+(Though, strangely, it goes by the name CVDU or Color VDU in the source tree.)
+That's the operating theory, at least.
 
 The VDC-II project was born.
 
