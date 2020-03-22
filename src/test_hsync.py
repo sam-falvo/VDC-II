@@ -46,8 +46,10 @@ class HSyncFormal(Elaboratable):
             self.hcounter.eq(dut.hcounter),
             self.htotal_reached.eq(dut.htotal_reached),
             self.hsync.eq(dut.hsync),
+            self.charpix0.eq(dut.charpix0),
 
             self.fv_sync_width_ctr.eq(dut.fv_sync_width_ctr),
+            self.fv_charpix_ctr.eq(dut.fv_charpix_ctr),
         ]
 
         # Connect DUT inputs.  These will be driven by the formal verifier
@@ -56,18 +58,22 @@ class HSyncFormal(Elaboratable):
             dut.htotal.eq(self.htotal),
             dut.hsync_pos.eq(self.hsync_pos),
             dut.hsync_width.eq(self.hsync_width),
+            dut.char_total.eq(self.char_total),
         ]
 
-        # The horizontal counter must monotonically increment with each pixel shown,
-        # until the maximum possible for each raster.
+        # The horizontal counter must monotonically increment with each
+        # character shown, until the maximum possible for each raster.
         with m.If(past_valid & Past(rst)):
             sync += Assert(self.hcounter == 0)
 
-        with m.If(past_valid & Past(self.htotal_reached)):
+        with m.If(past_valid & Past(self.htotal_reached) & Past(self.charpix0)):
             sync += Assert(self.hcounter == 0)
 
-        with m.If(past_valid & ~Past(self.htotal_reached)):
+        with m.If(past_valid & ~Past(self.htotal_reached) & Past(self.charpix0)):
             sync += Assert(self.hcounter == (Past(self.hcounter) + 1)[0:HCOUNTER_WIDTH])
+
+        with m.If(past_valid & ~Past(self.charpix0)):
+            sync += Assert(Stable(self.hcounter))
 
         # The horizontal sync pulse must assert when we reach the HSYNC start
         # boundary.  The sync pulse must negate when we reach the stopping
@@ -100,6 +106,20 @@ class HSyncFormal(Elaboratable):
             (self.fv_sync_width_ctr != 0)
         ):
             sync += Assert(self.hsync)
+
+        # The character pixel counter should decrement with each pixel pushed to the display.
+        # When it reaches 0, it should reset to its maximum value.
+        with m.If(
+            past_valid &
+            (Past(self.fv_charpix_ctr) == 0)
+        ):
+            sync += Assert(self.fv_charpix_ctr == Past(self.char_total))
+
+        with m.If(
+            past_valid &
+            (Past(self.fv_charpix_ctr) != 0)
+        ):
+            sync += Assert(self.fv_charpix_ctr == (Past(self.fv_charpix_ctr) - 1))
 
         return m
 
