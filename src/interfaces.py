@@ -33,3 +33,26 @@ def create_hsync_interface(self, platform=""):
     if platform == 'formal':
         self.fv_sync_width_ctr = Signal(len(self.hsync_width))
         self.fv_charpix_ctr = Signal(4)
+
+
+def create_regset8bit_interface(self, platform=''):
+    # Host CPU Interface
+    ## Inputs
+    self.adr_i = Signal(6)
+    self.we_i = Signal(1)
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.dat_o = Signal(8)
+
+    # Register Settings and Status/Flags
+    ## Inputs
+    ## Outputs
+    self.ht = Signal(8)
+    self.hp = Signal(8)
+    self.hw = Signal(4)
+    self.vw = Signal(4)
+    self.cdh = Signal(4)
+    self.cth = Signal(4)
+
+

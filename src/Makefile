@@ -7,5 +7,5 @@ test-all:
 
 
 clean:
-	rm -rf *_do_* *~ *.vcd *.gtkw spec_* *.ilang
+	rm -rf *_do_* *~ *.vcd *.gtkw spec_* *.ilang *.pyc __pycache__
 
