@@ -3,6 +3,10 @@ from math import log2
 from nmigen import Signal
 
 
+# Each VDC has a version tag in its register set.
+# Convenient!
+VDC_VERSION = 2
+
 # Each VDC register is 8-bits wide.
 REG_WIDTH=8
 
@@ -56,3 +60,27 @@ def create_regset8bit_interface(self, platform=''):
     self.cth = Signal(4)
 
 
+def create_hostbus_interface(self, platform=""):
+    self.a = Signal(1)
+    self.rd = Signal(1)
+    self.d = Signal(REG_WIDTH)
+    self.cs = Signal(1)
+
+    self.q = Signal(len(self.d))
+    self.qoe = Signal(1)
+
+    self.ready_i = Signal(1)
+    self.vblank_i = Signal(1)
+    self.lp_i = Signal(1)
+    self.dat_i = Signal(len(self.d))
+    self.dat_o = Signal(len(self.d))
+    self.adr_o = Signal(6)
+    self.we_o = Signal(1)
+
+    if platform == 'formal':
+        self.fv_old_cssync = Signal(1)
+        self.fv_cssync = Signal(1)
+        self.fv_rdsync = Signal(1)
+        self.fv_we_ports = Signal(1)
+        self.fv_async = Signal(1)
+        self.fv_dsync = Signal(len(self.d))
