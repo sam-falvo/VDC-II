@@ -55,12 +55,14 @@ class RegSet8Bit(Elaboratable):
         comb = m.d.comb
 
         # Implement the registers we need.
-        ht_reg = Signal(8)  # R00
-        hp_reg = Signal(8)  # R02
-        vw_reg = Signal(4)  # R03[7:4]
-        hw_reg = Signal(4)  # R03[3:0]
-        cth_reg = Signal(4) # R22[7:4]
-        cdh_reg = Signal(4) # R22[3:0]
+        ht_reg = Signal(8)                      # R00
+        hp_reg = Signal(8)                      # R02
+        vw_reg = Signal(4)                      # R03[7:4]
+        hw_reg = Signal(4)                      # R03[3:0]
+        cth_reg = Signal(4)                     # R22[7:4]
+        cdh_reg = Signal(4)                     # R22[3:0]
+        hsync_xor_reg = Signal(1, reset=1)      # R37 [7]
+        vsync_xor_reg = Signal(1, reset=1)      # R37 [6]
 
         comb += [
             self.ht.eq(ht_reg),
@@ -69,6 +71,8 @@ class RegSet8Bit(Elaboratable):
             self.hw.eq(hw_reg),
             self.cth.eq(cth_reg),
             self.cdh.eq(cdh_reg),
+            self.hsync_xor.eq(hsync_xor_reg),
+            self.vsync_xor.eq(vsync_xor_reg),
         ]
 
         # Handle read data routing
@@ -80,6 +84,8 @@ class RegSet8Bit(Elaboratable):
             comb += self.dat_o.eq(Cat(self.hw, self.vw))
         with m.Elif(self.adr_i == 22):
             comb += self.dat_o.eq(Cat(self.cdh, self.cth))
+        with m.Elif(self.adr_i == 37):
+            comb += self.dat_o.eq(Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor))
         with m.Else():
             comb += self.dat_o.eq(Const(-1, len(self.dat_o)))
 
@@ -99,5 +105,10 @@ class RegSet8Bit(Elaboratable):
                     cth_reg.eq(self.dat_i[4:8]),
                     cdh_reg.eq(self.dat_i[0:4]),
                 ]
-                
+            with m.Elif(self.adr_i == 37):
+                sync += [
+                    hsync_xor_reg.eq(self.dat_i[7]),
+                    vsync_xor_reg.eq(self.dat_i[6]),
+                ]
+
         return m

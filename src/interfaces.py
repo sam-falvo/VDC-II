@@ -58,6 +58,8 @@ def create_regset8bit_interface(self, platform=''):
     self.vw = Signal(4)
     self.cdh = Signal(4)
     self.cth = Signal(4)
+    self.hsync_xor = Signal(1)
+    self.vsync_xor = Signal(1)
 
 
 def create_hostbus_interface(self, platform=""):

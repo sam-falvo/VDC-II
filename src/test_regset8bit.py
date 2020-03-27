@@ -51,6 +51,8 @@ class RegSet8BitFormal(Elaboratable):
             self.vw.eq(dut.vw),
             self.cdh.eq(dut.cdh),
             self.cth.eq(dut.cth),
+            self.hsync_xor.eq(dut.hsync_xor),
+            self.vsync_xor.eq(dut.vsync_xor),
 
             self.dat_o.eq(dut.dat_o),
         ]
@@ -64,7 +66,7 @@ class RegSet8BitFormal(Elaboratable):
         ]
 
         # When the register selected is valid, only that register's results
-        # are offered on the do bus.  Otherwise, do must be 0xFF.
+        # are offered on the dat_o bus.  Otherwise, dat_o must be 0xFF.
         with m.If(self.adr_i == 0):
             sync += Assert(self.dat_o == self.ht)
 
@@ -77,8 +79,18 @@ class RegSet8BitFormal(Elaboratable):
         with m.If(self.adr_i == 22):
             sync += Assert(self.dat_o == Cat(self.cdh, self.cth))
 
+        with m.If(self.adr_i == 37):
+            sync += Assert(self.dat_o == Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor))
+
         with m.If(self.adr_i == 63):
             sync += Assert(self.dat_o == Const(-1, len(self.dat_o)))
+
+        # After reset, HSYNC and VSYNC polarity bits should be 1.
+        with m.If(Past(rst) & ~rst):
+            sync += [
+                Assert(self.hsync_xor == 1),
+                Assert(self.vsync_xor == 1),
+            ]
 
         return m
 
