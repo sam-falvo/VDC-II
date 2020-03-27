@@ -17,21 +17,21 @@ class HSync(Elaboratable):
     - htotal :: The horizontal total specifies how many pixels
       exist on each raster.  This value is usually provided through
       a programmable register that is CPU-facing.  Note that this
-      input has PIXEL-resolution, not character resolution.
+      input has CHARACTER-resolution, not pixel resolution.
     - hsync_pos :: The position of the HSYNC pulse, relative to pixel
-      zero.  This also has pixel resolution.
-    - hsync_width :: The width of the sync pulse, in pixels.  The VDC
-      register set provides 4 bits to specify how many characters the
-      sync pulse spans, which is why it is shorter than other position
-      counters.
+      zero.  This also has character resolution.
+    - hsync_width :: The width of the sync pulse, in characters.  The
+      VDC register set provides 4 bits to specify how many characters
+      the sync pulse spans, which is why it is shorter than other
+      position counters.
     - char_total :: The total number of pixels in a character column.
-      This should never exceed 8 or there'll be undefined behavior.
+      Presently, it should never exceed 8 or there'll be undefined
+      behavior.
 
     The following outputs exist:
     - hcounter :: This is the current pixel counter.  On a VGA display,
       at 640x480 resolution, this will span from 0 to 799 or something
-      close to that depending on dot clock frequency.  Obviously, set
-      htotal = 799 in this case.
+      close to that depending on dot clock frequency.
     - htotal_reached :: A diagnostic output, it provides a single pulse
       indicating when the horizontal total has been reached for a single
       raster.
@@ -68,7 +68,7 @@ class HSync(Elaboratable):
         # reaches the final count.
         comb += self.htotal_reached.eq(self.hcounter == self.htotal)
 
-        # The counter increments for every pixel displayed,
+        # The counter increments for every character displayed,
         # and resets for the next raster.
         with m.If(~self.htotal_reached & self.charpix0):
             sync += self.hcounter.eq(self.hcounter + 1)
