@@ -83,6 +83,7 @@ class HSyncFormal(Elaboratable):
             past_valid &
             (~Past(self.hsync)) &
             (Past(self.hcounter) == Past(self.hsync_pos)) &
+            Past(self.charpix0) &
             (Past(self.hsync_width) != 0)
         ):
             sync += Assert(self.hsync)
@@ -106,6 +107,23 @@ class HSyncFormal(Elaboratable):
             (self.fv_sync_width_ctr != 0)
         ):
             sync += Assert(self.hsync)
+
+        # The sync width counter must decrement in units of characters.
+        with m.If(
+            past_valid &
+            (Past(self.fv_sync_width_ctr) != 0) &
+            ~Past(self.charpix0)
+        ):
+            sync += Assert(Stable(self.fv_sync_width_ctr))
+
+        with m.If(
+            past_valid &
+            (Past(self.fv_sync_width_ctr) != 0) &
+            Past(self.charpix0)
+        ):
+            sync += Assert(
+                self.fv_sync_width_ctr == (Past(self.fv_sync_width_ctr) - 1)
+            )
 
         # The character pixel counter should decrement with each pixel pushed to the display.
         # When it reaches 0, it should reset to its maximum value.

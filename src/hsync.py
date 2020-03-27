@@ -83,10 +83,10 @@ class HSync(Elaboratable):
 
         # HSYNC asserted as long as the counter is running.
         comb += self.hsync.eq(sync_width_ctr != 0)
-        with m.If(self.hsync):
+        with m.If(self.hsync & self.charpix0):
             sync += sync_width_ctr.eq(sync_width_ctr - 1)
 
-        with m.If(~self.hsync & (self.hcounter == self.hsync_pos)):
+        with m.If(~self.hsync & (self.hcounter == self.hsync_pos) & self.charpix0):
             sync += sync_width_ctr.eq(self.hsync_width)
 
         # Debugging ports for formal verification
