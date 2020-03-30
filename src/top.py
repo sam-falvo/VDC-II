@@ -156,9 +156,7 @@ class Top(Elaboratable):
     def elaborate(self, platform):
         m = Module()
         comb = m.d.comb
-        sync = ClockDomain()
         vga = ClockDomain()
-        m.domains.sync = sync
         m.domains.vga = vga
 
         pll = PLL(
@@ -210,7 +208,6 @@ class Top(Elaboratable):
             video.hsync.o.eq(hsync.hsync ^ regset.hsync_xor),
             video.vsync.o.eq(hsync.hsync), # DEBUG
         ]
-
 
         return m
 
