@@ -1,4 +1,6 @@
 from nmigen.test.utils import FHDLTestCase
+from nmigen.back.pysim import Simulator
+
 from nmigen import (
     Elaboratable,
     Module,
@@ -128,3 +130,111 @@ class HostBusTestCase(FHDLTestCase):
     def test_hostbus(self):
         self.assertFormal(HostBusFormal(), mode='bmc', depth=100)
         self.assertFormal(HostBusFormal(), mode='prove', depth=100)
+
+    def write_addr_port(self, m, byte):
+        yield m.a.eq(0)
+        yield m.cs.eq(1)
+        yield m.rd.eq(0)
+        yield
+        yield
+        yield
+        yield m.db.eq(byte)
+        yield
+        yield
+        yield
+        yield m.cs.eq(0)
+        yield m.db.eq(0)
+        yield
+        yield
+        yield
+
+    def write_data_port(self, m, byte):
+        yield m.a.eq(1)
+        yield m.cs.eq(1)
+        yield m.rd.eq(0)
+        yield
+        yield
+        yield
+        yield m.db.eq(byte)
+        yield
+        yield
+        yield
+        yield m.cs.eq(0)
+        yield m.db.eq(0)
+        yield
+        yield
+        yield
+
+    def test_write_txn(self):
+        from regset8bit import RegSet8Bit
+
+        m = Module()
+
+        m.a = Signal(1)
+        m.db = Signal(8)
+        m.cs = Signal(1)
+        m.rd = Signal(1)
+        m.q = Signal(8)
+        m.qoe = Signal(1)
+
+        hb = m.submodules.hb = HostBus()
+        rs = m.submodules.rs = RegSet8Bit()
+
+        m.d.comb += [
+            hb.a.eq(m.a),
+            hb.d.eq(m.db),
+            hb.cs.eq(m.cs),
+            hb.rd.eq(m.rd),
+
+            m.q.eq(hb.q),
+            m.qoe.eq(hb.qoe),
+
+            rs.dat_i.eq(hb.dat_o),
+            rs.adr_i.eq(hb.adr_o),
+            rs.we_i.eq(hb.we_o),
+            hb.dat_i.eq(rs.dat_o),
+        ]
+
+        sim = Simulator(m)
+        sim.add_clock(1e-6)
+        with sim.write_vcd("hostbus.vcd"):
+            def process():
+                yield m.a.eq(1)
+                yield m.db.eq(0)
+                yield m.cs.eq(0)
+                yield m.rd.eq(0)
+                yield
+                yield
+                yield
+                yield
+                self.assertEqual((yield m.qoe), 0)
+
+                yield from self.write_addr_port(m, 0)
+                yield from self.write_data_port(m, 6)
+                yield from self.write_addr_port(m, 0)
+
+                # read back data port value
+                yield m.a.eq(1)
+                yield m.cs.eq(1)
+                yield m.rd.eq(1)
+                yield
+                yield
+                yield
+                self.assertEqual((yield m.qoe), 1)
+                # Data not yet valid because of synchronized inputs
+                yield
+                yield
+                yield
+                self.assertEqual((yield m.qoe), 1)
+                self.assertEqual((yield m.q), 6)
+                yield m.cs.eq(0)
+                yield
+                yield
+                yield
+                self.assertEqual((yield m.qoe), 0)
+                yield
+                yield
+                yield
+
+            sim.add_sync_process(process)
+            sim.run()
