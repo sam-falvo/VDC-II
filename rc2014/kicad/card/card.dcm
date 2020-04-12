@@ -6,4 +6,16 @@ K connector
 F ~
 $ENDCMP
 #
+$CMP SN74AVC8T245PW
+D 8-Bit Dual-Supply Bus Transceiver With Configurable Voltage Translation and 3-State Outputs, TSSOP-24
+K Noninverting Bidirectional
+F https://www.ti.com/lit/ds/symlink/sn74avc8t245.pdf
+$ENDCMP
+#
+$CMP SN74LVC8T245PWR
+D 8-Bit Dual-Supply Bus Transceiver With Configurable Voltage Translation and 3-State Outputs, TSSOP-24
+K Noninverting Bidirectional
+F https://www.ti.com/lit/ds/symlink/sn74avc8t245.pdf
+$ENDCMP
+#
 #End Doc Library
