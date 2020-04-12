@@ -1,6 +1,8 @@
 # VDC-II
 The VDC-II core is an open source Video Display Controller following in the footsteps, but not a pure clone, of the Commodore 8568 VDC chip.
 
+Link to project on [Hackaday.io](https://hackaday.io/project/170581-vdc-ii).
+
 ## Why?
 I'm working on a homebrew computer of my own design, called the Kestrel-3.
 The Kestrel-3 project, however, is very slow-going, as I'm basically building everything from the ground up.
