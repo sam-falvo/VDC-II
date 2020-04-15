@@ -32,7 +32,8 @@ class VDC_II_Chip(TinyFPGABXPlatform):
             Subsignal("rd", PinsN("A2", dir="i")),
             Subsignal("ad",  Pins("A1", dir="i")),
             Subsignal("cs", PinsN("B1", dir="i")),
-            Subsignal("db", Pins("C2 C1 D2 D1 E2 E1 G2 H1", dir="io")),
+            Subsignal("dboe", Pins("C2", dir="o")),
+            Subsignal("db", Pins("C1 D2 D1 E2 E1 G2 H1 J1", dir="io")),
             Attrs(IO_STANDARD="LVCMOS"),
         ),
         Resource("video", 0,
@@ -182,6 +183,7 @@ class Top(Elaboratable):
             # Outputs
             bus.db.o.eq(hostbus.q),
             bus.db.oe.eq(hostbus.qoe),
+            bus.dboe.o.eq(hostbus.qoe),
         ]
 
         regset = m.submodules.regset = DomainRenamer("vga")(RegSet8Bit())
