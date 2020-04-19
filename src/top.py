@@ -1,3 +1,5 @@
+import os
+
 from nmigen import (
     ClockDomain,
     ClockSignal,
@@ -23,7 +25,7 @@ from pll import PLL
 
 from hostbus import HostBus
 from regset8bit import RegSet8Bit
-from hsync import HSync
+from sync_generator import SyncGenerator
 
 
 class VDC_II_Chip(TinyFPGABXPlatform):
@@ -197,22 +199,23 @@ class Top(Elaboratable):
             hostbus.dat_i.eq(regset.dat_o),
         ]
 
-        hsync = m.submodules.hsync = DomainRenamer("vga")(HSync())
+        hsync = m.submodules.hsync = DomainRenamer("vga")(SyncGenerator())
         video = platform.request("video", 0)
         comb += [
             # Inputs
-            hsync.htotal.eq(regset.ht),
-            hsync.hsync_pos.eq(regset.hp),
-            hsync.hsync_width.eq(regset.hw),
+            hsync.total.eq(regset.ht),
+            hsync.sync_pos.eq(regset.hp),
+            hsync.sync_width.eq(regset.hw),
             hsync.char_total.eq(regset.cth),
 
             # Outputs
-            video.hsync.o.eq(hsync.hsync ^ regset.hsync_xor),
-            video.vsync.o.eq(hsync.hsync), # DEBUG
+            video.hsync.o.eq(hsync.xsync ^ regset.hsync_xor),
+            video.vsync.o.eq(hsync.xsync), # DEBUG
         ]
 
         return m
 
 
 if __name__ == '__main__':
-    VDC_II_Chip().build(Top(), do_program=True)
+    do_program = not(not(os.getenv("DO_PROGRAM", None)))
+    VDC_II_Chip().build(Top(), do_program=do_program)

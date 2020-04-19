@@ -13,30 +13,43 @@ REG_WIDTH=8
 # Character tile data can be no wider than 8 pixels.
 MAX_PIXELS_PER_CHAR=8
 
-# Horizontal total is given in units of characters, not
-# pixels.  Characters, in turn, are specified through
-# the character total and character displayed fields.
-# The 8568 VDC allots 8 bits to a horizontal total field.
-HCOUNTER_WIDTH=8
+# Horizontal and vertical totals are given in units of
+# characters, not pixels.  Characters, in turn, are
+# specified through the character total and character
+# displayed fields.  The 8568 VDC allots 8 bits to a 
+# horizontal total field, and up to 31 for a vertical
+# total.
+COUNTER_WIDTH=8
+HCOUNTER_WIDTH=COUNTER_WIDTH
 
 
-def create_hsync_interface(self, platform=""):
+def create_syncgen_interface(self, platform="", ctr_width=COUNTER_WIDTH):
     # outputs
-    self.hcounter = Signal(HCOUNTER_WIDTH)
-    self.htotal_reached = Signal(1)
-    self.hsync = Signal(1)
-    self.charpix0 = Signal()
+    self.counter = Signal(ctr_width)
+    self.total_reached = Signal(1)
+    self.xsync = Signal(1)
+    self.last = Signal(1)
 
-    # inputs                                    VDC Reg/Field
-    self.htotal = Signal(HCOUNTER_WIDTH)        # R00
-    self.hsync_pos = Signal(HCOUNTER_WIDTH)     # R02
-    self.hsync_width = Signal(4)                # R03 [0:4]
-    self.char_total = Signal(4)                 # R22 [0:4]
+    # inputs
+    #
+    # Inputs come from the following sources in the
+    # VDC register set:
+    #
+    #              HSYNC     VSYNC
+    #              --------  --------
+    # total        R00       R04
+    # sync_pos     R02       R07
+    # sync_width   R03[0:4]  R03[4:8]
+    # char_total   R22[0:4]  R22[4:8]
+    self.total = Signal(len(self.counter))
+    self.sync_pos = Signal(len(self.counter))
+    self.sync_width = Signal(4)
+    self.char_total = Signal(4)
 
     # FV outputs
     if platform == 'formal':
-        self.fv_sync_width_ctr = Signal(len(self.hsync_width))
-        self.fv_charpix_ctr = Signal(4)
+        self.fv_sync_width_ctr = Signal(len(self.sync_width))
+        self.fv_unit_ctr = Signal(4)
 
 
 def create_regset8bit_interface(self, platform=''):

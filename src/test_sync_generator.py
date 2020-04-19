@@ -13,14 +13,14 @@ from nmigen.hdl.ast import (
     Stable,
 )
 
-from interfaces import create_hsync_interface, HCOUNTER_WIDTH
-from hsync import HSync
+from interfaces import create_syncgen_interface, COUNTER_WIDTH
+from sync_generator import SyncGenerator
 
 
-class HSyncFormal(Elaboratable):
+class SyncGeneratorFormal(Elaboratable):
     def __init__(self):
         super().__init__()
-        create_hsync_interface(self, platform="formal")
+        create_syncgen_interface(self, platform="formal")
 
     def elaborate(self, platform):
         m = Module()
@@ -34,7 +34,7 @@ class HSyncFormal(Elaboratable):
         z_past_valid = Signal(1, reset=0)
         sync += z_past_valid.eq(1)
 
-        dut = HSync(platform=platform)
+        dut = SyncGenerator(platform=platform)
         m.submodules.dut = dut
         rst = ResetSignal()
 
@@ -43,83 +43,83 @@ class HSyncFormal(Elaboratable):
 
         # Connect DUT outputs
         comb += [
-            self.hcounter.eq(dut.hcounter),
-            self.htotal_reached.eq(dut.htotal_reached),
-            self.hsync.eq(dut.hsync),
-            self.charpix0.eq(dut.charpix0),
+            self.counter.eq(dut.counter),
+            self.total_reached.eq(dut.total_reached),
+            self.xsync.eq(dut.xsync),
+            self.last.eq(dut.last),
 
             self.fv_sync_width_ctr.eq(dut.fv_sync_width_ctr),
-            self.fv_charpix_ctr.eq(dut.fv_charpix_ctr),
+            self.fv_unit_ctr.eq(dut.fv_unit_ctr),
         ]
 
         # Connect DUT inputs.  These will be driven by the formal verifier
         # for us, based on assertions and assumptions.
         comb += [
-            dut.htotal.eq(self.htotal),
-            dut.hsync_pos.eq(self.hsync_pos),
-            dut.hsync_width.eq(self.hsync_width),
+            dut.total.eq(self.total),
+            dut.sync_pos.eq(self.sync_pos),
+            dut.sync_width.eq(self.sync_width),
             dut.char_total.eq(self.char_total),
         ]
 
-        # The horizontal counter must monotonically increment with each
-        # character shown, until the maximum possible for each raster.
+        # The counter must monotonically increment with each
+        # character shown, until the maximum possible along its axis.
         with m.If(past_valid & Past(rst)):
-            sync += Assert(self.hcounter == 0)
+            sync += Assert(self.counter == 0)
 
-        with m.If(past_valid & Past(self.htotal_reached) & Past(self.charpix0)):
-            sync += Assert(self.hcounter == 0)
+        with m.If(past_valid & Past(self.total_reached) & Past(self.last)):
+            sync += Assert(self.counter == 0)
 
-        with m.If(past_valid & ~Past(self.htotal_reached) & Past(self.charpix0)):
-            sync += Assert(self.hcounter == (Past(self.hcounter) + 1)[0:HCOUNTER_WIDTH])
+        with m.If(past_valid & ~Past(self.total_reached) & Past(self.last)):
+            sync += Assert(self.counter == (Past(self.counter) + 1)[0:COUNTER_WIDTH])
 
-        with m.If(past_valid & ~Past(self.charpix0)):
-            sync += Assert(Stable(self.hcounter))
+        with m.If(past_valid & ~Past(self.last)):
+            sync += Assert(Stable(self.counter))
 
-        # The horizontal sync pulse must assert when we reach the HSYNC start
+        # The sync pulse must assert when we reach the SYNC start
         # boundary.  The sync pulse must negate when we reach the stopping
-        # boundary.  If these boundaries overlap, the state of HSYNC must remain
+        # boundary.  If these boundaries overlap, the state of SYNC must remain
         # stable.
         with m.If(
             past_valid &
-            (~Past(self.hsync)) &
-            (Past(self.hcounter) == Past(self.hsync_pos)) &
-            Past(self.charpix0) &
-            (Past(self.hsync_width) != 0)
+            (~Past(self.xsync)) &
+            (Past(self.counter) == Past(self.sync_pos)) &
+            Past(self.last) &
+            (Past(self.sync_width) != 0)
         ):
-            sync += Assert(self.hsync)
+            sync += Assert(self.xsync)
 
         with m.If(
             past_valid &
-            (~Past(self.hsync)) &
-            (Past(self.hcounter) == Past(self.hsync_pos)) &
-            (Past(self.hsync_width) == 0)
+            (~Past(self.xsync)) &
+            (Past(self.counter) == Past(self.sync_pos)) &
+            (Past(self.sync_width) == 0)
         ):
-            sync += Assert(~self.hsync)
+            sync += Assert(~self.xsync)
 
         with m.If(
             past_valid &
             (self.fv_sync_width_ctr == 0)
         ):
-            sync += Assert(~self.hsync)
+            sync += Assert(~self.xsync)
 
         with m.If(
             past_valid &
             (self.fv_sync_width_ctr != 0)
         ):
-            sync += Assert(self.hsync)
+            sync += Assert(self.xsync)
 
         # The sync width counter must decrement in units of characters.
         with m.If(
             past_valid &
             (Past(self.fv_sync_width_ctr) != 0) &
-            ~Past(self.charpix0)
+            ~Past(self.last)
         ):
             sync += Assert(Stable(self.fv_sync_width_ctr))
 
         with m.If(
             past_valid &
             (Past(self.fv_sync_width_ctr) != 0) &
-            Past(self.charpix0)
+            Past(self.last)
         ):
             sync += Assert(
                 self.fv_sync_width_ctr == (Past(self.fv_sync_width_ctr) - 1)
@@ -129,20 +129,20 @@ class HSyncFormal(Elaboratable):
         # When it reaches 0, it should reset to its maximum value.
         with m.If(
             past_valid &
-            (Past(self.fv_charpix_ctr) == 0)
+            (Past(self.fv_unit_ctr) == 0)
         ):
-            sync += Assert(self.fv_charpix_ctr == Past(self.char_total))
+            sync += Assert(self.fv_unit_ctr == Past(self.char_total))
 
         with m.If(
             past_valid &
-            (Past(self.fv_charpix_ctr) != 0)
+            (Past(self.fv_unit_ctr) != 0)
         ):
-            sync += Assert(self.fv_charpix_ctr == (Past(self.fv_charpix_ctr) - 1))
+            sync += Assert(self.fv_unit_ctr == (Past(self.fv_unit_ctr) - 1))
 
         return m
 
 
-class HSyncTestCase(FHDLTestCase):
-    def test_hsync(self):
-        self.assertFormal(HSyncFormal(), mode='bmc', depth=100)
-        self.assertFormal(HSyncFormal(), mode='prove', depth=100)
+class SyncGeneratorTestCase(FHDLTestCase):
+    def test_sync_generator(self):
+        self.assertFormal(SyncGeneratorFormal(), mode='bmc', depth=100)
+        self.assertFormal(SyncGeneratorFormal(), mode='prove', depth=100)
