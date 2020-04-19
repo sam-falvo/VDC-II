@@ -61,16 +61,16 @@ class SyncGeneratorFormal(Elaboratable):
             dut.char_total.eq(self.char_total),
         ]
 
-        # The counter must monotonically increment with each
+        # The counter must monotonically decrement with each
         # character shown, until the maximum possible along its axis.
         with m.If(past_valid & Past(rst)):
-            sync += Assert(self.counter == 0)
+            sync += Assert(self.counter == Past(self.total))
 
         with m.If(past_valid & Past(self.total_reached) & Past(self.last)):
-            sync += Assert(self.counter == 0)
+            sync += Assert(self.counter == Past(self.total))
 
         with m.If(past_valid & ~Past(self.total_reached) & Past(self.last)):
-            sync += Assert(self.counter == (Past(self.counter) + 1)[0:COUNTER_WIDTH])
+            sync += Assert(self.counter == (Past(self.counter) - 1)[0:COUNTER_WIDTH])
 
         with m.If(past_valid & ~Past(self.last)):
             sync += Assert(Stable(self.counter))

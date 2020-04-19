@@ -67,15 +67,15 @@ class SyncGenerator(Elaboratable):
 
         # The total_reached signal asserts when the counter
         # reaches the final count.
-        comb += self.total_reached.eq(self.counter == self.total)
+        comb += self.total_reached.eq(self.counter == 0)
 
-        # The counter increments for every character displayed,
+        # The counter decrements for every character displayed,
         # and resets for the next unit.
         with m.If(~self.total_reached & self.last):
-            sync += self.counter.eq(self.counter + 1)
+            sync += self.counter.eq(self.counter - 1)
 
         with m.If(self.total_reached & self.last):
-            sync += self.counter.eq(0)
+            sync += self.counter.eq(self.total)
 
         # The sync signal asserts during the configured sync period,
         # determined by the sync_pos and sync_width inputs.
