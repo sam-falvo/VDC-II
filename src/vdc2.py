@@ -86,7 +86,7 @@ class VDC2(Elaboratable):
             # Outputs
             self.hs.eq(hsyncgen.xs ^ regset.hsync_xor),
             self.vs.eq(vsyncgen.xs ^ regset.vsync_xor),
-            self.r.eq(hsyncgen.rastclken),
+            self.r.eq(hsyncgen.xclken),
             self.g.eq(vsyncgen.xclken),
             self.b.eq(0),
             self.i.eq(hsyncgen.xden & vsyncgen.xden),
