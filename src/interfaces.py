@@ -78,6 +78,7 @@ def create_syncgen_interface(
         self.fv_xdctr = Signal(len(self.xd))
         self.fv_adj = Signal(1)
         self.fv_adjctr = Signal(len(self.xta))
+
     self.tp0 = Signal(1)
     self.tp1 = Signal(1)
     self.tp2 = Signal(1)
