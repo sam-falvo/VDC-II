@@ -17,8 +17,8 @@ MAX_PIXELS_PER_CHAR=8
 def create_vdc2_interface(self, platform=""):
     # Register Set
     ## Inputs
-    self.adr_i = Signal()
-    self.we_i = Signal()
+    self.adr_i = Signal(6)
+    self.we_i = Signal(1)
     self.dat_i = Signal(8)
 
     ## Outputs
