@@ -143,9 +143,9 @@ class SyncGen(Elaboratable):
         ]
 
         with m.If(self.dotclken):
-            with m.If(self.syncen & self.xclken & go_xsync):
+            with m.If(self.syncen & self.xclken & go_xsync & ~self.xs):
                 sync += xsctr.eq(self.xsw)
-            with m.If(self.syncen & ~go_xsync & self.xs):
+            with m.If(self.syncen & self.xs):
                 sync += xsctr.eq(xsctr - 1)
 
         #

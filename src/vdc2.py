@@ -75,7 +75,7 @@ class VDC2(Elaboratable):
             hsyncgen.xta.eq(0),
 
             vsyncgen.dotclken.eq(hsyncgen.rastclken & hsyncgen.xclken),
-            vsyncgen.syncen.eq(1),
+            vsyncgen.syncen.eq(hsyncgen.rastclken & hsyncgen.xclken),
             vsyncgen.xct.eq(regset.vct),
             vsyncgen.xt.eq(regset.vt),
             vsyncgen.xsp.eq(regset.vsp),
