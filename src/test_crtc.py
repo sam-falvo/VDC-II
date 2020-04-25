@@ -9,6 +9,7 @@ from nmigen import (
 from nmigen.hdl.ast import (
     Assert,
     Assume,
+    Fell,
     Past,
     Stable,
 )
@@ -35,6 +36,7 @@ def create_crtc_interface(self, platform="", ctr_width=COUNTER_WIDTH):
     self.hsp = Signal(8)
     self.hsw = Signal(4)
     self.hd = Signal(8)
+    self.hta = Signal(4)
 
     # outputs
     self.hclken = Signal(1)
@@ -49,6 +51,8 @@ def create_crtc_interface(self, platform="", ctr_width=COUNTER_WIDTH):
         self.fv_go_hsync = Signal(1)
         self.fv_hsctr = Signal(4)
         self.fv_hdctr = Signal(8)
+        self.fv_adj = Signal(1)
+        self.fv_adjctr = Signal(4)
 
 
 class CRTC(Elaboratable):
@@ -98,6 +102,20 @@ class CRTC(Elaboratable):
         comb = m.d.comb
 
         #
+        # Horizontal Total Adjust support.
+        #
+        # Note: adjctr is reloaded later on in the source.
+        #
+
+        adjctr = Signal(4)
+        adj = Signal(1)
+
+        comb += adj.eq(adjctr != 0)
+
+        with m.If(adj):
+            sync += adjctr.eq(adjctr - 1)
+
+        #
         # Horizontal Character Clocking
         #
 
@@ -111,7 +129,7 @@ class CRTC(Elaboratable):
 
         with m.If(hclken):
             sync += hdot.eq(0)
-        with m.Else():
+        with m.If(~hclken & ~adj):
             sync += hdot.eq(hdot + 1)
 
         #
@@ -125,9 +143,16 @@ class CRTC(Elaboratable):
             htotal.eq(hchr == self.ht),
         ]
 
-        with m.If(hclken & ~htotal):
-            sync += hchr.eq(hchr + 1)
-        with m.If(hclken & htotal):
+        with m.If(~adj):
+            with m.If(hclken & ~htotal):
+                sync += hchr.eq(hchr + 1)
+            with m.If(hclken & htotal):
+                with m.If(self.hta == 0):
+                    sync += hchr.eq(0)
+                with m.If(self.hta != 0):
+                    sync += adjctr.eq(self.hta)
+
+        with m.If(adjctr == 1):
             sync += hchr.eq(0)
 
         #
@@ -170,6 +195,8 @@ class CRTC(Elaboratable):
                 self.fv_go_hsync.eq(go_hsync),
                 self.fv_hsctr.eq(hsctr),
                 self.fv_hdctr.eq(hdctr),
+                self.fv_adj.eq(adj),
+                self.fv_adjctr.eq(adjctr),
             ]
 
         return m
@@ -211,6 +238,8 @@ class CRTCFormal(Elaboratable):
             self.fv_go_hsync.eq(dut.fv_go_hsync),
             self.fv_hsctr.eq(dut.fv_hsctr),
             self.fv_hdctr.eq(dut.fv_hdctr),
+            self.fv_adj.eq(dut.fv_adj),
+            self.fv_adjctr.eq(dut.fv_adjctr),
         ]
 
         # Connect DUT inputs.  These will be driven by the formal verifier
@@ -221,7 +250,29 @@ class CRTCFormal(Elaboratable):
             dut.hsp.eq(self.hsp),
             dut.hsw.eq(self.hsw),
             dut.hd.eq(self.hd),
+            dut.hta.eq(self.hta),
         ]
+
+        #
+        # The original 6845, 6545, and even 8563/8568 chips did not support anything
+        # like a horizontal total adjust.  However, this could be a useful feature.
+        # Consider the case of having a 25.2MHz dot clock, but you want 9-pixel wide
+        # characters for easier legibility.  Instead of a horizontal total of 100,
+        # this would require a horizontal total of 88.88... characters.  It would be
+        # nice if you could set HT=(88-1)=87 and a hypothetical HTA=(0.888*9)=8.
+        #
+        # It would also let us re-use the same logic description for both horizontal
+        # and vertical sync generators.  ;)
+        #
+
+        with m.If(~self.fv_adj):
+            comb += Assert(self.fv_adjctr == 0)
+
+        with m.If(self.fv_adj):
+            comb += Assert(self.fv_adjctr != 0)
+
+        with m.If(past_valid & Past(self.fv_adj)):
+            sync += Assert(self.fv_adjctr == (Past(self.fv_adjctr) - 1))
 
         #
         # The horizontal clock is typically driven by the dot clock.
@@ -246,8 +297,11 @@ class CRTCFormal(Elaboratable):
         with m.If(self.fv_hdot != self.hct):
             comb += Assert(~self.hclken)
 
-        with m.If(past_valid & ~Past(self.hclken)):
+        with m.If(past_valid & ~Past(self.hclken) & ~Past(self.fv_adj)):
             sync += Assert(self.fv_hdot == (Past(self.fv_hdot)+1)[0:4])
+
+        with m.If(past_valid & ~Past(self.hclken) & Past(self.fv_adj)):
+            sync += Assert(Stable(self.fv_hdot))
 
         with m.If(past_valid & Past(self.hclken)):
             sync += Assert(self.fv_hdot == 0)
@@ -263,19 +317,30 @@ class CRTCFormal(Elaboratable):
         # matrix activities.
         #
 
-        with m.If(self.fv_hchr == self.ht):
-            comb += Assert(self.fv_htotal)
+        with m.If(~self.fv_adj):
+            with m.If(self.fv_hchr == self.ht):
+                comb += Assert(self.fv_htotal)
 
-        with m.If(self.fv_hchr != self.ht):
-            comb += Assert(~self.fv_htotal)
+            with m.If(self.fv_hchr != self.ht):
+                comb += Assert(~self.fv_htotal)
 
-        with m.If(past_valid & ~Past(self.hclken) & ~Past(self.fv_htotal)):
-            sync += Assert(Stable(self.fv_hchr))
+        with m.If(~Past(self.fv_adj)):
+            with m.If(past_valid & ~Past(self.hclken) & ~Past(self.fv_htotal)):
+                sync += Assert(Stable(self.fv_hchr))
 
-        with m.If(past_valid & Past(self.hclken) & ~Past(self.fv_htotal)):
-            sync += Assert(self.fv_hchr == (Past(self.fv_hchr) + 1)[0:COUNTER_WIDTH])
+            with m.If(past_valid & Past(self.hclken) & ~Past(self.fv_htotal)):
+                sync += Assert(self.fv_hchr == (Past(self.fv_hchr) + 1)[0:COUNTER_WIDTH])
 
-        with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal)):
+            with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal) & (Past(self.hta) == 0)):
+                sync += [
+                    Assert(self.fv_hchr == 0),
+                    Assert(~self.fv_adj),
+                ]
+
+            with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal) & (Past(self.hta) != 0)):
+                sync += Assert(self.fv_adj)
+
+        with m.If(past_valid & Fell(self.fv_adj)):
             sync += Assert(self.fv_hchr == 0)
 
         #
@@ -330,18 +395,6 @@ class CRTCFormal(Elaboratable):
 
         with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal)):
             sync += Assert(self.fv_hdctr == Past(self.hd))
-
-        #
-        # The original 6845, 6545, and even 8563/8568 chips did not support anything
-        # like a horizontal total adjust.  However, this could be a useful feature.
-        # Consider the case of having a 25.2MHz dot clock, but you want 9-pixel wide
-        # characters for easier legibility.  Instead of a horizontal total of 100,
-        # this would require a horizontal total of 88.88... characters.  It would be
-        # nice if you could set HT=(88-1)=87 and a hypothetical HTA=(0.888*9)=8.
-        #
-        # It would also let us re-use the same logic description for both horizontal
-        # and vertical sync generators.  ;)
-        #
 
         return m
 
