@@ -31,6 +31,7 @@ def create_crtc_interface(self, platform="", ctr_width=COUNTER_WIDTH):
     # hsw, vsw     R03[0:4]  R03[4:8]
     # hct, vct     R22[0:4]  R09[0:5]
 
+    self.dotclken = Signal(1)
     self.hct = Signal(4)
     self.ht = Signal(8)
     self.hsp = Signal(8)
@@ -64,6 +65,10 @@ class CRTC(Elaboratable):
     outputs as it sees fit.
 
     Inputs:
+    - dotclken -- Dot Clock Enable.  If negated, the module's clock has
+      neglible or no effect.  Only when this signal is asserted are the
+      CRTC counters altered.
+
     - hct -- Horizontal Character Total; this sets the number of pixels
       per character along the X-axis.  For example, a font with 5 pixels
       and no inter-character gaps would set this to 4.  A font 8-pixels
@@ -112,8 +117,9 @@ class CRTC(Elaboratable):
 
         comb += adj.eq(adjctr != 0)
 
-        with m.If(adj):
-            sync += adjctr.eq(adjctr - 1)
+        with m.If(self.dotclken):
+            with m.If(adj):
+                sync += adjctr.eq(adjctr - 1)
 
         #
         # Horizontal Character Clocking
@@ -127,10 +133,12 @@ class CRTC(Elaboratable):
             self.hclken.eq(hclken),
         ]
 
-        with m.If(hclken):
-            sync += hdot.eq(0)
-        with m.If(~hclken & ~adj):
-            sync += hdot.eq(hdot + 1)
+        with m.If(self.dotclken):
+            with m.If(hclken):
+                sync += hdot.eq(0)
+
+            with m.If(~hclken & ~adj):
+                sync += hdot.eq(hdot + 1)
 
         #
         # Horizontal Line Clocking
@@ -143,17 +151,18 @@ class CRTC(Elaboratable):
             htotal.eq(hchr == self.ht),
         ]
 
-        with m.If(~adj):
-            with m.If(hclken & ~htotal):
-                sync += hchr.eq(hchr + 1)
-            with m.If(hclken & htotal):
-                with m.If(self.hta == 0):
-                    sync += hchr.eq(0)
-                with m.If(self.hta != 0):
-                    sync += adjctr.eq(self.hta)
+        with m.If(self.dotclken):
+            with m.If(~adj):
+                with m.If(hclken & ~htotal):
+                    sync += hchr.eq(hchr + 1)
+                with m.If(hclken & htotal):
+                    with m.If(self.hta == 0):
+                        sync += hchr.eq(0)
+                    with m.If(self.hta != 0):
+                        sync += adjctr.eq(self.hta)
 
-        with m.If(adjctr == 1):
-            sync += hchr.eq(0)
+            with m.If(adjctr == 1):
+                sync += hchr.eq(0)
 
         #
         # Horizontal Sync Generator
@@ -167,10 +176,11 @@ class CRTC(Elaboratable):
             self.hs.eq(hsctr != 0),
         ]
 
-        with m.If(hclken & go_hsync):
-            sync += hsctr.eq(self.hsw)
-        with m.If(hclken & ~go_hsync & self.hs):
-            sync += hsctr.eq(hsctr - 1)
+        with m.If(self.dotclken):
+            with m.If(hclken & go_hsync):
+                sync += hsctr.eq(self.hsw)
+            with m.If(hclken & ~go_hsync & self.hs):
+                sync += hsctr.eq(hsctr - 1)
 
         #
         # Horizontal Display Enable Generator
@@ -182,10 +192,11 @@ class CRTC(Elaboratable):
             self.hden.eq(hdctr != 0),
         ]
 
-        with m.If(hclken & htotal):
-            sync += hdctr.eq(self.hd)
-        with m.If(hclken & ~htotal & self.hden):
-            sync += hdctr.eq(hdctr - 1)
+        with m.If(self.dotclken):
+            with m.If(hclken & htotal):
+                sync += hdctr.eq(self.hd)
+            with m.If(hclken & ~htotal & self.hden):
+                sync += hdctr.eq(hdctr - 1)
 
         if platform == 'formal':
             comb += [
@@ -245,6 +256,7 @@ class CRTCFormal(Elaboratable):
         # Connect DUT inputs.  These will be driven by the formal verifier
         # for us, based on assertions and assumptions.
         comb += [
+            dut.dotclken.eq(self.dotclken),
             dut.hct.eq(self.hct),
             dut.ht.eq(self.ht),
             dut.hsp.eq(self.hsp),
@@ -271,7 +283,10 @@ class CRTCFormal(Elaboratable):
         with m.If(self.fv_adj):
             comb += Assert(self.fv_adjctr != 0)
 
-        with m.If(past_valid & Past(self.fv_adj)):
+        with m.If(past_valid & ~Past(self.dotclken)):
+            comb += Assert(Stable(self.fv_adjctr))
+
+        with m.If(past_valid & Past(self.dotclken) & Past(self.fv_adj)):
             sync += Assert(self.fv_adjctr == (Past(self.fv_adjctr) - 1))
 
         #
@@ -297,14 +312,18 @@ class CRTCFormal(Elaboratable):
         with m.If(self.fv_hdot != self.hct):
             comb += Assert(~self.hclken)
 
-        with m.If(past_valid & ~Past(self.hclken) & ~Past(self.fv_adj)):
-            sync += Assert(self.fv_hdot == (Past(self.fv_hdot)+1)[0:4])
-
-        with m.If(past_valid & ~Past(self.hclken) & Past(self.fv_adj)):
+        with m.If(past_valid & ~Past(self.dotclken)):
             sync += Assert(Stable(self.fv_hdot))
 
-        with m.If(past_valid & Past(self.hclken)):
-            sync += Assert(self.fv_hdot == 0)
+        with m.If(past_valid & Past(self.dotclken)):
+            with m.If(~Past(self.hclken) & ~Past(self.fv_adj)):
+                sync += Assert(self.fv_hdot == (Past(self.fv_hdot)+1)[0:4])
+
+            with m.If(~Past(self.hclken) & Past(self.fv_adj)):
+                sync += Assert(Stable(self.fv_hdot))
+
+            with m.If(Past(self.hclken)):
+                sync += Assert(self.fv_hdot == 0)
 
         #
         # Once we have the concept of character-based synchronization,
@@ -317,31 +336,35 @@ class CRTCFormal(Elaboratable):
         # matrix activities.
         #
 
-        with m.If(~self.fv_adj):
-            with m.If(self.fv_hchr == self.ht):
-                comb += Assert(self.fv_htotal)
+        with m.If(self.fv_hchr == self.ht):
+            comb += Assert(self.fv_htotal)
 
-            with m.If(self.fv_hchr != self.ht):
-                comb += Assert(~self.fv_htotal)
+        with m.If(self.fv_hchr != self.ht):
+            comb += Assert(~self.fv_htotal)
 
-        with m.If(~Past(self.fv_adj)):
-            with m.If(past_valid & ~Past(self.hclken) & ~Past(self.fv_htotal)):
+        with m.If(past_valid & ~Past(self.dotclken)):
+            with m.If(Past(self.fv_adj)):
                 sync += Assert(Stable(self.fv_hchr))
 
-            with m.If(past_valid & Past(self.hclken) & ~Past(self.fv_htotal)):
-                sync += Assert(self.fv_hchr == (Past(self.fv_hchr) + 1)[0:COUNTER_WIDTH])
+        with m.If(past_valid & Past(self.dotclken)):
+            with m.If(~Past(self.fv_adj)):
+                with m.If(~Past(self.hclken) & ~Past(self.fv_htotal)):
+                    sync += Assert(Stable(self.fv_hchr))
 
-            with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal) & (Past(self.hta) == 0)):
-                sync += [
-                    Assert(self.fv_hchr == 0),
-                    Assert(~self.fv_adj),
-                ]
+                with m.If(Past(self.hclken) & ~Past(self.fv_htotal)):
+                    sync += Assert(self.fv_hchr == (Past(self.fv_hchr) + 1)[0:COUNTER_WIDTH])
 
-            with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal) & (Past(self.hta) != 0)):
-                sync += Assert(self.fv_adj)
+                with m.If(Past(self.hclken) & Past(self.fv_htotal) & (Past(self.hta) == 0)):
+                    sync += [
+                        Assert(self.fv_hchr == 0),
+                        Assert(~self.fv_adj),
+                    ]
 
-        with m.If(past_valid & Fell(self.fv_adj)):
-            sync += Assert(self.fv_hchr == 0)
+                with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal) & (Past(self.hta) != 0)):
+                    sync += Assert(self.fv_adj)
+
+            with m.If(Fell(self.fv_adj)):
+                sync += Assert(self.fv_hchr == 0)
 
         #
         # When the horizontal sync position has been reached, we must
@@ -354,20 +377,21 @@ class CRTCFormal(Elaboratable):
         with m.If(self.hclken & (self.fv_hchr == self.hsp)):
             comb += Assert(self.fv_go_hsync)
 
-        with m.If(past_valid & Past(self.fv_go_hsync) & ~Past(self.hclken)):
-            sync += Assert(Stable(self.fv_hsctr))
-
-        with m.If(past_valid & Past(self.fv_go_hsync) & Past(self.hclken)):
-            sync += Assert(self.fv_hsctr == Past(self.hsw))
-
         with m.If(self.fv_hsctr != 0):
             comb += Assert(self.hs)
 
-        with m.If(past_valid & ~Past(self.hclken)):
+        with m.If(past_valid & Past(self.fv_go_hsync) & ~Past(self.hclken)):
             sync += Assert(Stable(self.fv_hsctr))
 
-        with m.If(past_valid & Past(self.hclken) & (Past(self.fv_hsctr) != 0) & ~Past(self.fv_go_hsync)):
-            sync += Assert(self.fv_hsctr == (Past(self.fv_hsctr) - 1))
+        with m.If(past_valid & Past(self.dotclken)):
+            with m.If(Past(self.fv_go_hsync) & Past(self.hclken)):
+                sync += Assert(self.fv_hsctr == Past(self.hsw))
+
+            with m.If(Past(self.hclken) & Past(self.hs) & ~Past(self.fv_go_hsync)):
+                sync += Assert(self.fv_hsctr == (Past(self.fv_hsctr) - 1))
+
+        with m.If(past_valid & ~Past(self.hclken)):
+            sync += Assert(Stable(self.fv_hsctr))
 
         with m.If(past_valid & Past(self.hclken) & (Past(self.fv_hsctr) == 0) & ~Past(self.fv_go_hsync)):
             sync += Assert(Stable(self.fv_hsctr))
@@ -390,11 +414,12 @@ class CRTCFormal(Elaboratable):
         with m.If(past_valid & ~Past(self.hclken)):
             sync += Assert(Stable(self.fv_hdctr))
 
-        with m.If(past_valid & Past(self.hclken) & Past(self.hden) & ~Past(self.fv_htotal)):
-            sync += Assert(self.fv_hdctr == (Past(self.fv_hdctr) - 1))
+        with m.If(past_valid & Past(self.dotclken)):
+            with m.If(Past(self.hclken) & Past(self.hden) & ~Past(self.fv_htotal)):
+                sync += Assert(self.fv_hdctr == (Past(self.fv_hdctr) - 1))
 
-        with m.If(past_valid & Past(self.hclken) & Past(self.fv_htotal)):
-            sync += Assert(self.fv_hdctr == Past(self.hd))
+            with m.If(Past(self.hclken) & Past(self.fv_htotal)):
+                sync += Assert(self.fv_hdctr == Past(self.hd))
 
         return m
 
