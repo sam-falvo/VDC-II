@@ -46,11 +46,17 @@ class RegSet8BitFormal(Elaboratable):
         # Connect DUT outputs
         comb += [
             self.ht.eq(dut.ht),
-            self.hp.eq(dut.hp),
-            self.hw.eq(dut.hw),
-            self.vw.eq(dut.vw),
-            self.cdh.eq(dut.cdh),
-            self.cth.eq(dut.cth),
+            self.hd.eq(dut.hd),
+            self.hsp.eq(dut.hsp),
+            self.vsw.eq(dut.vsw),
+            self.hsw.eq(dut.hsw),
+            self.vt.eq(dut.vt),
+            self.vta.eq(dut.vta),
+            self.vd.eq(dut.vd),
+            self.vsp.eq(dut.vsp),
+            self.vct.eq(dut.vct),
+            self.hcd.eq(dut.hcd),
+            self.hct.eq(dut.hct),
             self.hsync_xor.eq(dut.hsync_xor),
             self.vsync_xor.eq(dut.vsync_xor),
 
@@ -70,14 +76,32 @@ class RegSet8BitFormal(Elaboratable):
         with m.If(self.adr_i == 0):
             sync += Assert(self.dat_o == self.ht)
 
+        with m.If(self.adr_i == 1):
+            sync += Assert(self.dat_o == self.hd)
+
         with m.If(self.adr_i == 2):
-            sync += Assert(self.dat_o == self.hp)
+            sync += Assert(self.dat_o == self.hsp)
 
         with m.If(self.adr_i == 3):
-            sync += Assert(self.dat_o == Cat(self.hw, self.vw))
+            sync += Assert(self.dat_o == Cat(self.hsw, self.vsw))
+
+        with m.If(self.adr_i == 4):
+            sync += Assert(self.dat_o == self.vt)
+
+        with m.If(self.adr_i == 5):
+            sync += Assert(self.dat_o == Cat(self.vta, Const(-1, 3)))
+
+        with m.If(self.adr_i == 6):
+            sync += Assert(self.dat_o == self.vd)
+
+        with m.If(self.adr_i == 7):
+            sync += Assert(self.dat_o == self.vsp)
+
+        with m.If(self.adr_i == 9):
+            sync += Assert(self.dat_o == Cat(self.vct, Const(-1, 3)))
 
         with m.If(self.adr_i == 22):
-            sync += Assert(self.dat_o == Cat(self.cdh, self.cth))
+            sync += Assert(self.dat_o == Cat(self.hcd, self.hct))
 
         with m.If(self.adr_i == 37):
             sync += Assert(self.dat_o == Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor))

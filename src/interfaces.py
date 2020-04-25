@@ -13,43 +13,71 @@ REG_WIDTH=8
 # Character tile data can be no wider than 8 pixels.
 MAX_PIXELS_PER_CHAR=8
 
-# Horizontal and vertical totals are given in units of
-# characters, not pixels.  Characters, in turn, are
-# specified through the character total and character
-# displayed fields.  The 8568 VDC allots 8 bits to a 
-# horizontal total field, and up to 31 for a vertical
-# total.
-COUNTER_WIDTH=8
-HCOUNTER_WIDTH=COUNTER_WIDTH
+
+def create_vdc2_interface(self, platform=""):
+    # Register Set
+    ## Inputs
+    self.adr_i = Signal(6)
+    self.we_i = Signal(1)
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.dat_o = Signal(8)
+
+    # Video Interface
+    ## Outputs
+    self.hs = Signal(1)
+    self.vs = Signal(1)
+    self.r = Signal(1)
+    self.g = Signal(1)
+    self.b = Signal(1)
+    self.i = Signal(1)
 
 
-def create_syncgen_interface(self, platform="", ctr_width=COUNTER_WIDTH):
-    # outputs
-    self.counter = Signal(ctr_width)
-    self.total_reached = Signal(1)
-    self.xsync = Signal(1)
-    self.last = Signal(1)
-
+def create_syncgen_interface(
+    self, platform="",
+    char_total_bits=4, total_bits=8, sync_pos_bits=8, sync_width_bits=4,
+    disp_bits=8, adj_bits=4
+):
     # inputs
     #
     # Inputs come from the following sources in the
     # VDC register set:
     #
-    #              HSYNC     VSYNC
+    #              X-Axis    Y-Axis
     #              --------  --------
-    # total        R00       R04
-    # sync_pos     R02       R07
-    # sync_width   R03[0:4]  R03[4:8]
-    # char_total   R22[0:4]  R22[4:8]
-    self.total = Signal(len(self.counter))
-    self.sync_pos = Signal(len(self.counter))
-    self.sync_width = Signal(4)
-    self.char_total = Signal(4)
+    # xt           R00       R04
+    # xta          -         R05
+    # xd           R01       R06
+    # xsp          R02       R07
+    # xsw          R03[0:4]  R03[4:8]
+    # xct          R22[0:4]  R09[0:5]
+
+    self.dotclken = Signal(1)
+    self.syncen = Signal(1)
+    self.xct = Signal(char_total_bits)
+    self.xt = Signal(total_bits)
+    self.xsp = Signal(sync_pos_bits)
+    self.xsw = Signal(sync_width_bits)
+    self.xd = Signal(disp_bits)
+    self.xta = Signal(adj_bits)
+
+    # outputs
+    self.xclken = Signal(1)
+    self.xs = Signal(1)
+    self.xden = Signal(1)
+    self.rastclken = Signal(1)
 
     # FV outputs
     if platform == 'formal':
-        self.fv_sync_width_ctr = Signal(len(self.sync_width))
-        self.fv_unit_ctr = Signal(4)
+        self.fv_xdot = Signal(len(self.xct))
+        self.fv_xchr = Signal(len(self.xt))
+        self.fv_xtotal = Signal(1)
+        self.fv_go_xsync = Signal(1)
+        self.fv_xsctr = Signal(len(self.xsw))
+        self.fv_xdctr = Signal(len(self.xd))
+        self.fv_adj = Signal(1)
+        self.fv_adjctr = Signal(len(self.xta))
 
 
 def create_regset8bit_interface(self, platform=''):
@@ -66,11 +94,17 @@ def create_regset8bit_interface(self, platform=''):
     ## Inputs
     ## Outputs
     self.ht = Signal(8)
-    self.hp = Signal(8)
-    self.hw = Signal(4)
-    self.vw = Signal(4)
-    self.cdh = Signal(4)
-    self.cth = Signal(4)
+    self.hd = Signal(8)
+    self.hsp = Signal(8)
+    self.vsw = Signal(4)
+    self.hsw = Signal(4)
+    self.vt = Signal(8)
+    self.vta = Signal(5)
+    self.vd = Signal(8)
+    self.vsp = Signal(8)
+    self.vct = Signal(5)
+    self.hcd = Signal(4)
+    self.hct = Signal(4)
     self.hsync_xor = Signal(1)
     self.vsync_xor = Signal(1)
 

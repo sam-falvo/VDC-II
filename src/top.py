@@ -1,6 +1,7 @@
 import os
 
 from nmigen import (
+    Cat,
     ClockDomain,
     ClockSignal,
     Const,
@@ -25,7 +26,7 @@ from pll import PLL
 
 from hostbus import HostBus
 from regset8bit import RegSet8Bit
-from sync_generator import SyncGenerator
+from vdc2 import VDC2
 
 
 class VDC_II_Chip(TinyFPGABXPlatform):
@@ -41,6 +42,9 @@ class VDC_II_Chip(TinyFPGABXPlatform):
         Resource("video", 0,
             Subsignal("hsync", Pins("H9", dir="o")),
             Subsignal("vsync", Pins("D9", dir="o")),
+            Subsignal("blu", Pins("D8 C9", dir="o")),
+            Subsignal("grn", Pins("A9 B8", dir="o")),
+            Subsignal("red", Pins("A8 B7", dir="o")),
         ),
     ]
 
@@ -188,29 +192,25 @@ class Top(Elaboratable):
             bus.dboe.o.eq(hostbus.qoe),
         ]
 
-        regset = m.submodules.regset = DomainRenamer("vga")(RegSet8Bit())
-        comb += [
-            # Inputs
-            regset.adr_i.eq(hostbus.adr_o),
-            regset.we_i.eq(hostbus.we_o),
-            regset.dat_i.eq(hostbus.dat_o),
-
-            # Outputs
-            hostbus.dat_i.eq(regset.dat_o),
-        ]
-
-        hsync = m.submodules.hsync = DomainRenamer("vga")(SyncGenerator())
         video = platform.request("video", 0)
+        vdc2 = m.submodules.vdc2 = DomainRenamer("vga")(VDC2())
         comb += [
-            # Inputs
-            hsync.total.eq(regset.ht),
-            hsync.sync_pos.eq(regset.hp),
-            hsync.sync_width.eq(regset.hw),
-            hsync.char_total.eq(regset.cth),
+            # CPU Bus Interface
+            ## Inputs
+            vdc2.adr_i.eq(hostbus.adr_o),
+            vdc2.we_i.eq(hostbus.we_o),
+            vdc2.dat_i.eq(hostbus.dat_o),
 
-            # Outputs
-            video.hsync.o.eq(hsync.xsync ^ regset.hsync_xor),
-            video.vsync.o.eq(hsync.xsync), # DEBUG
+            ## Outputs
+            hostbus.dat_i.eq(vdc2.dat_o),
+
+            # Video
+            ## Outputs
+            video.hsync.o.eq(vdc2.hs),
+            video.vsync.o.eq(vdc2.vs),
+            video.blu.o.eq(Cat(vdc2.i, vdc2.b)),
+            video.grn.o.eq(Cat(vdc2.i, vdc2.g)),
+            video.red.o.eq(Cat(vdc2.i, vdc2.r)),
         ]
 
         return m

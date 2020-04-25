@@ -38,12 +38,6 @@ class RegSet8Bit(Elaboratable):
 
     Outputs:
 
-    - ht :: Horizontal Total
-    - hp :: Horizontal sync position
-    - hw :: Horizontal Sync Width
-    - vw :: Vertical Sync Width (currently unused)
-    - cth :: Horizontal character cell total
-    - cdh :: Horizontal character cell displayed
     """
     def __init__(self, platform=''):
         super().__init__()
@@ -56,36 +50,56 @@ class RegSet8Bit(Elaboratable):
 
         # Implement the registers we need.
         ht_reg = Signal(8)                      # R00
-        hp_reg = Signal(8)                      # R02
-        vw_reg = Signal(4)                      # R03[7:4]
-        hw_reg = Signal(4)                      # R03[3:0]
-        cth_reg = Signal(4)                     # R22[7:4]
-        cdh_reg = Signal(4)                     # R22[3:0]
+        hd_reg = Signal(8)                      # R01
+        hsp_reg = Signal(8)                     # R02
+        vsw_reg = Signal(4)                     # R03[7:4]
+        hsw_reg = Signal(4)                     # R03[3:0]
+        vt_reg = Signal(8)                      # R04
+        vta_reg = Signal(5)                     # R05
+        vd_reg = Signal(8)                      # R06
+        vsp_reg = Signal(8)                     # R07
+        vct_reg = Signal(5)                     # R09
+        hct_reg = Signal(4)                     # R22[7:4]
+        hcd_reg = Signal(4)                     # R22[3:0]
         hsync_xor_reg = Signal(1, reset=1)      # R37 [7]
         vsync_xor_reg = Signal(1, reset=1)      # R37 [6]
 
         comb += [
             self.ht.eq(ht_reg),
-            self.hp.eq(hp_reg),
-            self.vw.eq(vw_reg),
-            self.hw.eq(hw_reg),
-            self.cth.eq(cth_reg),
-            self.cdh.eq(cdh_reg),
+            self.hd.eq(hd_reg),
+            self.hsp.eq(hsp_reg),
+            self.vsw.eq(vsw_reg),
+            self.hsw.eq(hsw_reg),
+            self.vt.eq(vt_reg),
+            self.vta.eq(vta_reg),
+            self.vd.eq(vd_reg),
+            self.vsp.eq(vsp_reg),
+            self.vct.eq(vct_reg),
+            self.hct.eq(hct_reg),
+            self.hcd.eq(hcd_reg),
             self.hsync_xor.eq(hsync_xor_reg),
             self.vsync_xor.eq(vsync_xor_reg),
         ]
 
         # Handle read data routing
+        read_set = {
+            1: self.hd,
+            2: self.hsp,
+            3: Cat(hsw_reg, vsw_reg),
+            4: self.vt,
+            5: Cat(self.vta, Const(-1, 8-len(self.vta))),
+            6: self.vd,
+            7: self.vsp,
+            9: Cat(self.vct, Const(-1, 8-len(self.vct))),
+            22: Cat(self.hcd, self.hct),
+            37: Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor),
+        }
+
         with m.If(self.adr_i == 0):
             comb += self.dat_o.eq(self.ht)
-        with m.Elif(self.adr_i == 2):
-            comb += self.dat_o.eq(self.hp)
-        with m.Elif(self.adr_i == 3):
-            comb += self.dat_o.eq(Cat(self.hw, self.vw))
-        with m.Elif(self.adr_i == 22):
-            comb += self.dat_o.eq(Cat(self.cdh, self.cth))
-        with m.Elif(self.adr_i == 37):
-            comb += self.dat_o.eq(Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor))
+        for reg, val in read_set.items():
+            with m.Elif(self.adr_i == reg):
+                comb += self.dat_o.eq(val)
         with m.Else():
             comb += self.dat_o.eq(Const(-1, len(self.dat_o)))
 
@@ -93,17 +107,29 @@ class RegSet8Bit(Elaboratable):
         with m.If(self.we_i):
             with m.If(self.adr_i == 0):
                 sync += ht_reg.eq(self.dat_i)
+            with m.If(self.adr_i == 1):
+                sync += hd_reg.eq(self.dat_i)
             with m.Elif(self.adr_i == 2):
-                sync += hp_reg.eq(self.dat_i)
+                sync += hsp_reg.eq(self.dat_i)
             with m.Elif(self.adr_i == 3):
                 sync += [
-                    vw_reg.eq(self.dat_i[4:8]),
-                    hw_reg.eq(self.dat_i[0:4]),
+                    vsw_reg.eq(self.dat_i[4:8]),
+                    hsw_reg.eq(self.dat_i[0:4]),
                 ]
+            with m.Elif(self.adr_i == 4):
+                sync += vt_reg.eq(self.dat_i)
+            with m.Elif(self.adr_i == 5):
+                sync += vta_reg.eq(self.dat_i[0:len(vta_reg)])
+            with m.Elif(self.adr_i == 6):
+                sync += vd_reg.eq(self.dat_i)
+            with m.Elif(self.adr_i == 7):
+                sync += vsp_reg.eq(self.dat_i)
+            with m.Elif(self.adr_i == 9):
+                sync += vct_reg.eq(self.dat_i[0:len(vct_reg)])
             with m.Elif(self.adr_i == 22):
                 sync += [
-                    cth_reg.eq(self.dat_i[4:8]),
-                    cdh_reg.eq(self.dat_i[0:4]),
+                    hct_reg.eq(self.dat_i[4:8]),
+                    hcd_reg.eq(self.dat_i[0:4]),
                 ]
             with m.Elif(self.adr_i == 37):
                 sync += [
