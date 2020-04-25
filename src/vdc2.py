@@ -62,8 +62,11 @@ class VDC2(Elaboratable):
             char_total_bits=5,
             adj_bits=5,
         )
+        den = Signal(1)
 
         comb += [
+            den.eq(hsyncgen.xden & vsyncgen.xden),
+
             # Inputs
             hsyncgen.dotclken.eq(1),
             hsyncgen.syncen.eq(hsyncgen.xclken),
@@ -86,10 +89,14 @@ class VDC2(Elaboratable):
             # Outputs
             self.hs.eq(hsyncgen.xs ^ regset.hsync_xor),
             self.vs.eq(vsyncgen.xs ^ regset.vsync_xor),
-            self.r.eq(hsyncgen.xclken),
-            self.g.eq(vsyncgen.xclken),
+            self.r.eq(hsyncgen.xclken & den),
+            self.g.eq(vsyncgen.xclken & den),
             self.b.eq(0),
-            self.i.eq(hsyncgen.xden & vsyncgen.xden),
+            self.i.eq(den),
+#           self.r.eq(vsyncgen.tp0 & den),
+#           self.g.eq(vsyncgen.tp1 & den),
+#           self.b.eq(vsyncgen.tp2 & den),
+#           self.i.eq(vsyncgen.tp3 & den),
         ]
 
         return m

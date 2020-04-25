@@ -176,4 +176,11 @@ class SyncGen(Elaboratable):
                 self.fv_adjctr.eq(adjctr),
             ]
 
+        comb += [
+            self.tp0.eq(xchr[3]),
+            self.tp1.eq(xchr[2]),
+            self.tp2.eq(xchr[1]),
+            self.tp3.eq(xchr[0]),
+        ]
+
         return m
