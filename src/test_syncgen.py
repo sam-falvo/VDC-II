@@ -196,7 +196,7 @@ class SyncGenFormal(Elaboratable):
         with m.If(past_valid & Past(self.syncen) & (Past(self.fv_xsctr) == 0) & ~Past(self.fv_go_xsync)):
             sync += Assert(Stable(self.fv_xsctr))
 
-        with m.If(past_valid & Past(self.dotclken) & Past(self.syncen)):
+        with m.If(past_valid & Past(self.dotclken) & Past(self.syncen) & Past(self.xclken)):
             with m.If(Past(self.fv_go_xsync)):
                 sync += Assert(self.fv_xsctr == Past(self.xsw))
 

@@ -137,13 +137,13 @@ class SyncGen(Elaboratable):
         go_xsync = Signal(1)
 
         comb += [
+            self.xs.eq(xsctr != 0),
             self.rastclken.eq(xsctr == 1),
             go_xsync.eq(xchr == self.xsp),
-            self.xs.eq(xsctr != 0),
         ]
 
         with m.If(self.dotclken):
-            with m.If(self.syncen & go_xsync):
+            with m.If(self.syncen & self.xclken & go_xsync):
                 sync += xsctr.eq(self.xsw)
             with m.If(self.syncen & ~go_xsync & self.xs):
                 sync += xsctr.eq(xsctr - 1)
