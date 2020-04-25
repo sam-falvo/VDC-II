@@ -14,6 +14,26 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
+def create_vdc2_interface(self, platform=""):
+    # Register Set
+    ## Inputs
+    self.adr_i = Signal()
+    self.we_i = Signal()
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.dat_o = Signal(8)
+
+    # Video Interface
+    ## Outputs
+    self.hs = Signal(1)
+    self.vs = Signal(1)
+    self.r = Signal(1)
+    self.g = Signal(1)
+    self.b = Signal(1)
+    self.i = Signal(1)
+
+
 def create_syncgen_interface(
     self, platform="",
     char_total_bits=4, total_bits=8, sync_pos_bits=8, sync_width_bits=4,
@@ -74,11 +94,17 @@ def create_regset8bit_interface(self, platform=''):
     ## Inputs
     ## Outputs
     self.ht = Signal(8)
-    self.hp = Signal(8)
-    self.hw = Signal(4)
-    self.vw = Signal(4)
-    self.cdh = Signal(4)
-    self.cth = Signal(4)
+    self.hd = Signal(8)
+    self.hsp = Signal(8)
+    self.vsw = Signal(4)
+    self.hsw = Signal(4)
+    self.vt = Signal(8)
+    self.vta = Signal(5)
+    self.vd = Signal(8)
+    self.vsp = Signal(8)
+    self.vct = Signal(5)
+    self.hcd = Signal(4)
+    self.hct = Signal(4)
     self.hsync_xor = Signal(1)
     self.vsync_xor = Signal(1)
 

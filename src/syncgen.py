@@ -62,9 +62,9 @@ class SyncGen(Elaboratable):
       sync generator permission to count.
     """
 
-    def __init__(self, platform=""):
+    def __init__(self, **kw_args):
         super().__init__()
-        create_syncgen_interface(self, platform=platform)
+        create_syncgen_interface(self, **kw_args)
 
     def elaborate(self, platform):
         m = Module()
