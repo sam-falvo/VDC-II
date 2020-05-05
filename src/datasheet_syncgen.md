@@ -229,7 +229,7 @@ The following application more or less replicates the MOS 6545 CRTC timing chain
               "0" --/--|xta                  |       |   +---+
                     4  |                     |       |   | & |
                        +---------------------+       |   +---+
-		          |   |                      |     |
+                          |   |                      |     |
                     .-----|---|----------------------|-----*
                     |     |   |                      |     |
                     |  +---------------------+       |     |
