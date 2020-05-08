@@ -21,9 +21,10 @@ from nmigen_boards.tinyfpga_bx import TinyFPGABXPlatform
 
 from pll import PLL
 
-from hostbus import HostBus
 from regset8bit import RegSet8Bit
 from syncgen import SyncGen
+from ram import RAM
+from mpe import MPE
 
 from interfaces import create_vdc2_interface
 
@@ -89,14 +90,43 @@ class VDC2(Elaboratable):
             # Outputs
             self.hs.eq(hsyncgen.xs ^ regset.hsync_xor),
             self.vs.eq(vsyncgen.xs ^ regset.vsync_xor),
+            self.raw_vs.eq(vsyncgen.xs),
             self.r.eq(hsyncgen.xclken & den),
             self.g.eq(vsyncgen.xclken & den),
             self.b.eq(0),
             self.i.eq(den),
-#           self.r.eq(vsyncgen.tp0 & den),
-#           self.g.eq(vsyncgen.tp1 & den),
-#           self.b.eq(vsyncgen.tp2 & den),
-#           self.i.eq(vsyncgen.tp3 & den),
+        ]
+
+        # Video Block RAM and MPE
+
+        vram = m.submodules.vram = RAM(abus_width=14)
+        mpe = m.submodules.mpe = MPE(abus_width=14)
+        comb += [
+            self.ready_o.eq(mpe.ready),
+
+            regset.cpudatar.eq(mpe.cpudatar),
+            regset.incr_updloc.eq(mpe.incr_updloc),
+            regset.incr_copysrc.eq(mpe.incr_copysrc),
+            regset.decr_bytecnt.eq(mpe.decr_bytecnt),
+
+            mpe.go_wr_updloc.eq(regset.go_wr_updloc),
+            mpe.go_rd_cpudatar.eq(regset.go_rd_cpudatar),
+            mpe.go_wr_cpudataw.eq(regset.go_wr_cpudataw),
+            mpe.go_wr_bytecnt.eq(regset.go_wr_bytecnt),
+            mpe.update_location.eq(regset.update_location),
+            mpe.cpudataw.eq(regset.cpudataw),
+            mpe.block_copy.eq(regset.block_copy),
+            mpe.copysrc.eq(regset.copysrc),
+            mpe.bytecnt.eq(regset.bytecnt),
+
+            # Just for now; we need to route this connection to a
+            # proper arbiter to support video fetch, etc.
+            vram.adr_i.eq(mpe.mem_adr_o),
+            vram.we_i.eq(mpe.mem_we_o),
+            vram.dat_i.eq(mpe.mem_dat_o),
+            mpe.mem_dat_i.eq(vram.dat_o),
+            mpe.mem_stall_i.eq(0),
+            mpe.mem_ack_i.eq(1),
         ]
 
         return m

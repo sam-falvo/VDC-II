@@ -14,6 +14,50 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
+def create_mpe_interface(self, platform='', abus_width=14):
+    # Register-File Interface
+    ## Outputs
+    self.ready = Signal(1)
+    self.cpudatar = Signal(8)
+    self.incr_updloc = Signal(1)
+    self.incr_copysrc = Signal(1)
+    self.decr_bytecnt = Signal(1)
+
+    ## Inputs
+    self.go_wr_updloc = Signal(1)
+    self.go_rd_cpudatar = Signal(1)
+    self.go_wr_cpudataw = Signal(1)
+    self.go_wr_bytecnt = Signal(1)
+    self.update_location = Signal(16)
+    self.cpudataw = Signal(8)
+    self.block_copy = Signal(1)
+    self.copysrc = Signal(16)
+    self.bytecnt = Signal(8)
+
+    # Memory Interface
+    ## Outputs
+    self.mem_cyc_o = Signal(1)
+    self.mem_stb_o = Signal(1)
+    self.mem_adr_o = Signal(abus_width)
+    self.mem_we_o = Signal(1)
+    self.mem_dat_o = Signal(8)
+
+    ## Inputs
+    self.mem_stall_i = Signal(1)
+    self.mem_ack_i = Signal(1)
+    self.mem_dat_i = Signal(8)
+
+    if platform == 'formal':
+        self.fv_prefetch_0 = Signal(1)
+        self.fv_prefetch_1 = Signal(1)
+        self.fv_store_0 = Signal(1)
+        self.fv_store_1 = Signal(1)
+        self.fv_block_0 = Signal(1)
+        self.fv_block_1 = Signal(1)
+        self.fv_block_2 = Signal(1)
+        self.fv_block_3 = Signal(1)
+
+
 def create_vdc2_interface(self, platform=""):
     # Register Set
     ## Inputs
@@ -23,11 +67,13 @@ def create_vdc2_interface(self, platform=""):
 
     ## Outputs
     self.dat_o = Signal(8)
+    self.ready_o = Signal(1)
 
     # Video Interface
     ## Outputs
     self.hs = Signal(1)
     self.vs = Signal(1)
+    self.raw_vs = Signal(1)
     self.r = Signal(1)
     self.g = Signal(1)
     self.b = Signal(1)
@@ -91,6 +137,7 @@ def create_regset8bit_interface(self, platform=''):
     self.adr_i = Signal(6)
     self.we_i = Signal(1)
     self.dat_i = Signal(8)
+    self.rd_i = Signal(1)
 
     ## Outputs
     self.dat_o = Signal(8)
@@ -112,6 +159,27 @@ def create_regset8bit_interface(self, platform=''):
     self.hct = Signal(4)
     self.hsync_xor = Signal(1)
     self.vsync_xor = Signal(1)
+    self.vscroll = Signal(5)
+    self.blink_rate = Signal(1)
+    self.reverse_screen = Signal(1)
+    self.block_copy = Signal(1)
+
+    # Memory Port Engine/DMA Engine Interface
+    ## Inputs
+    self.cpudatar = Signal(8)
+    self.incr_updloc = Signal(1)
+    self.incr_copysrc = Signal(1)
+    self.decr_bytecnt = Signal(1)
+
+    ## Outputs
+    self.update_location = Signal(16)
+    self.copysrc = Signal(16)
+    self.cpudataw = Signal(8)
+    self.bytecnt = Signal(8)
+    self.go_wr_updloc = Signal(1)
+    self.go_rd_cpudatar = Signal(1)
+    self.go_wr_cpudataw = Signal(1)
+    self.go_wr_bytecnt = Signal(1)
 
 
 def create_hostbus_interface(self, platform=""):
@@ -130,11 +198,13 @@ def create_hostbus_interface(self, platform=""):
     self.dat_o = Signal(len(self.d))
     self.adr_o = Signal(6)
     self.we_o = Signal(1)
+    self.rd_o = Signal(1)
 
     if platform == 'formal':
         self.fv_old_cssync = Signal(1)
         self.fv_cssync = Signal(1)
         self.fv_rdsync = Signal(1)
         self.fv_we_ports = Signal(1)
+        self.fv_rd_ports = Signal(1)
         self.fv_async = Signal(1)
         self.fv_dsync = Signal(len(self.d))

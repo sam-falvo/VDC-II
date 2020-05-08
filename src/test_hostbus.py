@@ -50,11 +50,13 @@ class HostBusFormal(Elaboratable):
             self.qoe.eq(dut.qoe),
             self.adr_o.eq(dut.adr_o),
             self.we_o.eq(dut.we_o),
+            self.rd_o.eq(dut.rd_o),
 
             self.fv_old_cssync.eq(dut.fv_old_cssync),
             self.fv_cssync.eq(dut.fv_cssync),
             self.fv_rdsync.eq(dut.fv_rdsync),
             self.fv_we_ports.eq(dut.fv_we_ports),
+            self.fv_rd_ports.eq(dut.fv_rd_ports),
             self.fv_async.eq(dut.fv_async),
             self.fv_dsync.eq(dut.fv_dsync),
         ]
@@ -94,6 +96,24 @@ class HostBusFormal(Elaboratable):
         with m.If(self.fv_rdsync):
             comb += Assert(~self.fv_we_ports)
 
+        with m.If(past_valid & Past(self.fv_we_ports)):
+            sync += Assert(~self.fv_we_ports)
+
+        # I/O port read strobe pulses only when a read cycle concludes.
+        # This strobe is needed to detect when to auto-increment the
+        # update location register pair.
+        with m.If(~self.fv_old_cssync & self.fv_cssync & self.fv_rdsync):
+            comb += Assert(self.fv_rd_ports)
+
+        with m.If(~self.fv_old_cssync & ~self.fv_cssync & self.fv_rdsync):
+            comb += Assert(~self.fv_rd_ports)
+
+        with m.If(self.fv_we_ports):
+            comb += Assert(~self.fv_rd_ports)
+
+        with m.If(past_valid & Past(self.fv_rd_ports)):
+            sync += Assert(~self.fv_rd_ports)
+
         # Register Select port must take on a new value when written.
         with m.If(past_valid & Past(self.fv_we_ports) & ~Past(self.fv_async)):
             sync += Assert(self.adr_o == Past(self.fv_dsync)[0:6])
@@ -108,6 +128,17 @@ class HostBusFormal(Elaboratable):
 
         with m.If(~self.fv_async):
             comb += Assert(~self.we_o)
+
+        # The register set read strobe pulse should only assert when
+        # the host processor has finished reading the data port.
+        with m.If(self.fv_rd_ports & self.fv_async):
+            comb += Assert(self.rd_o)
+
+        with m.If(~self.fv_rd_ports):
+            comb += Assert(~self.rd_o)
+
+        with m.If(~self.fv_async):
+            comb += Assert(~self.rd_o)
 
         # When reading the status port, we should see the status bit
         # and version, at the very least.  Light-pen is not supported.

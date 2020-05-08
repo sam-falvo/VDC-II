@@ -59,8 +59,20 @@ class RegSet8BitFormal(Elaboratable):
             self.hct.eq(dut.hct),
             self.hsync_xor.eq(dut.hsync_xor),
             self.vsync_xor.eq(dut.vsync_xor),
+            self.vscroll.eq(dut.vscroll),
+            self.blink_rate.eq(dut.blink_rate),
+            self.reverse_screen.eq(dut.reverse_screen),
+            self.block_copy.eq(dut.block_copy),
 
             self.dat_o.eq(dut.dat_o),
+
+            self.update_location.eq(dut.update_location),
+            self.copysrc.eq(dut.copysrc),
+            self.bytecnt.eq(dut.bytecnt),
+            self.go_wr_updloc.eq(dut.go_wr_updloc),
+            self.go_rd_cpudatar.eq(dut.go_rd_cpudatar),
+            self.go_wr_cpudataw.eq(dut.go_wr_cpudataw),
+            self.go_wr_bytecnt.eq(dut.go_wr_bytecnt),
         ]
 
         # Connect DUT inputs.  These will be driven by the formal verifier
@@ -69,45 +81,93 @@ class RegSet8BitFormal(Elaboratable):
             dut.adr_i.eq(self.adr_i),
             dut.dat_i.eq(self.dat_i),
             dut.we_i.eq(self.we_i),
+            dut.rd_i.eq(self.rd_i),
+
+            dut.cpudatar.eq(self.cpudatar),
+            dut.incr_updloc.eq(self.incr_updloc),
+            dut.incr_copysrc.eq(self.incr_copysrc),
+            dut.decr_bytecnt.eq(self.decr_bytecnt),
         ]
 
         # When the register selected is valid, only that register's results
         # are offered on the dat_o bus.  Otherwise, dat_o must be 0xFF.
+
+        ## Positive Tests
         with m.If(self.adr_i == 0):
-            sync += Assert(self.dat_o == self.ht)
+            comb += Assert(self.dat_o == self.ht)
 
         with m.If(self.adr_i == 1):
-            sync += Assert(self.dat_o == self.hd)
+            comb += Assert(self.dat_o == self.hd)
 
         with m.If(self.adr_i == 2):
-            sync += Assert(self.dat_o == self.hsp)
+            comb += Assert(self.dat_o == self.hsp)
 
         with m.If(self.adr_i == 3):
-            sync += Assert(self.dat_o == Cat(self.hsw, self.vsw))
+            comb += Assert(self.dat_o == Cat(self.hsw, self.vsw))
 
         with m.If(self.adr_i == 4):
-            sync += Assert(self.dat_o == self.vt)
+            comb += Assert(self.dat_o == self.vt)
 
         with m.If(self.adr_i == 5):
-            sync += Assert(self.dat_o == Cat(self.vta, Const(-1, 3)))
+            comb += Assert(self.dat_o == Cat(self.vta, Const(-1, 3)))
 
         with m.If(self.adr_i == 6):
-            sync += Assert(self.dat_o == self.vd)
+            comb += Assert(self.dat_o == self.vd)
 
         with m.If(self.adr_i == 7):
-            sync += Assert(self.dat_o == self.vsp)
+            comb += Assert(self.dat_o == self.vsp)
 
         with m.If(self.adr_i == 9):
-            sync += Assert(self.dat_o == Cat(self.vct, Const(-1, 3)))
+            comb += Assert(self.dat_o == Cat(self.vct, Const(-1, 3)))
+
+        with m.If(self.adr_i == 18):
+            comb += Assert(self.dat_o == self.update_location[8:16])
+            with m.If(self.we_i):
+                comb += Assert(self.go_wr_updloc)
+            with m.Else():
+                comb += Assert(~self.go_wr_updloc)
+
+        with m.If(self.adr_i == 19):
+            comb += Assert(self.dat_o == self.update_location[0:8])
+            with m.If(self.we_i):
+                comb += Assert(self.go_wr_updloc)
+            with m.Else():
+                comb += Assert(~self.go_wr_updloc)
 
         with m.If(self.adr_i == 22):
-            sync += Assert(self.dat_o == Cat(self.hcd, self.hct))
+            comb += Assert(self.dat_o == Cat(self.hcd, self.hct))
+
+        with m.If(self.adr_i == 24):
+            comb += Assert(self.dat_o == Cat(
+                self.vscroll,
+                self.blink_rate,
+                self.reverse_screen,
+                self.block_copy,
+            ))
+
+        with m.If(self.adr_i == 30):
+            comb += Assert(self.dat_o == self.bytecnt)
+
+        with m.If(self.adr_i == 31):
+            comb += Assert(self.dat_o == self.cpudatar)
+            with m.If(self.rd_i):
+                comb += Assert(self.go_rd_cpudatar)
+
+        with m.If(self.adr_i == 32):
+            comb += Assert(self.dat_o == self.copysrc[8:16])
+
+        with m.If(self.adr_i == 33):
+            comb += Assert(self.dat_o == self.copysrc[0:8])
 
         with m.If(self.adr_i == 37):
-            sync += Assert(self.dat_o == Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor))
+            comb += Assert(self.dat_o == Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor))
 
         with m.If(self.adr_i == 63):
-            sync += Assert(self.dat_o == Const(-1, len(self.dat_o)))
+            comb += Assert(self.dat_o == Const(-1, len(self.dat_o)))
+
+        ## Negative Tests
+        with m.If(self.adr_i != 31):
+            comb += Assert(~self.go_rd_cpudatar)
 
         # After reset, HSYNC and VSYNC polarity bits should be 1.
         with m.If(Past(rst) & ~rst):
@@ -115,6 +175,27 @@ class RegSet8BitFormal(Elaboratable):
                 Assert(self.hsync_xor == 1),
                 Assert(self.vsync_xor == 1),
             ]
+
+        # After reading from the CPU Data port,
+        # the pointer must auto-increment.
+        with m.If(past_valid & (Past(self.adr_i) == 31)):
+            with m.If(Past(self.rd_i)):
+                sync += Assert(self.update_location == (Past(self.update_location) + 1)[0:16])
+
+            with m.If(Past(self.we_i) & ~Past(self.rd_i) & ~Past(self.incr_updloc)):
+                sync += Assert(Stable(self.update_location))
+
+        # Pointers must also increment when instructed by the MPE.
+        with m.If(past_valid & Past(self.incr_updloc)):
+            sync += Assert(self.update_location == (Past(self.update_location) + 1)[0:16])
+
+        with m.If(past_valid & Past(self.incr_copysrc)):
+            sync += Assert(self.copysrc == (Past(self.copysrc) + 1)[0:16])
+
+        # The byte counter is the only register which the MPE instructs to decrement.
+        # The MPE is responsible for not underflowing the counter.
+        with m.If(past_valid & Past(self.decr_bytecnt)):
+            sync += Assert(self.bytecnt == (Past(self.bytecnt) - 1)[0:8])
 
         return m
 

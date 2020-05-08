@@ -105,13 +105,16 @@ class HostBus(Elaboratable):
             self.dat_o.eq(d3),
         ]
 
-        # Derive write enable pulse for the I/O ports and
+        # Derive write enable and read strobe pulses for the I/O ports and
         # register set.
 
         we_ports = Signal(1)
+        rd_ports = Signal(1)
         comb += [
             we_ports.eq(~cs2 & cs3 & ~rd3),
+            rd_ports.eq(~cs2 & cs3 & rd3),
             self.we_o.eq(we_ports & a3),
+            self.rd_o.eq(rd_ports & a3),
         ]
 
         # Write to the register select port if addressed.
@@ -135,6 +138,7 @@ class HostBus(Elaboratable):
                 self.fv_cssync.eq(cs3),
                 self.fv_rdsync.eq(rd3),
                 self.fv_we_ports.eq(we_ports),
+                self.fv_rd_ports.eq(rd_ports),
                 self.fv_async.eq(a3),
                 self.fv_dsync.eq(d3),
             ]

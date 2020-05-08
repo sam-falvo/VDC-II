@@ -91,7 +91,19 @@ class RegSet8Bit(Elaboratable):
             6: self.vd,
             7: self.vsp,
             9: Cat(self.vct, Const(-1, 8-len(self.vct))),
+            18: self.update_location[8:16],
+            19: self.update_location[0:8],
             22: Cat(self.hcd, self.hct),
+            24: Cat(
+                self.vscroll,
+                self.blink_rate,
+                self.reverse_screen,
+                self.block_copy
+            ),
+            30: self.bytecnt,
+            31: self.cpudatar,
+            32: self.copysrc[8:16],
+            33: self.copysrc[0:8],
             37: Cat(Const(-1, 6), self.vsync_xor, self.hsync_xor),
         }
 
@@ -103,11 +115,31 @@ class RegSet8Bit(Elaboratable):
         with m.Else():
             comb += self.dat_o.eq(Const(-1, len(self.dat_o)))
 
+        # Handle Strobe Generation
+        incr_updloc = Signal(1)
+
+        comb += [
+            self.go_wr_updloc.eq(
+                ((self.adr_i == 18) | (self.adr_i == 19)) & self.we_i
+            ),
+            self.go_rd_cpudatar.eq(
+                (self.adr_i == 31) & self.rd_i
+            ),
+            self.go_wr_cpudataw.eq(
+                (self.adr_i == 31) & self.we_i
+            ),
+            self.go_wr_bytecnt.eq(
+                (self.adr_i == 30) & self.we_i
+            ),
+
+            incr_updloc.eq(self.go_rd_cpudatar | self.incr_updloc),
+        ]
+
         # Handle write data routing
         with m.If(self.we_i):
             with m.If(self.adr_i == 0):
                 sync += ht_reg.eq(self.dat_i)
-            with m.If(self.adr_i == 1):
+            with m.Elif(self.adr_i == 1):
                 sync += hd_reg.eq(self.dat_i)
             with m.Elif(self.adr_i == 2):
                 sync += hsp_reg.eq(self.dat_i)
@@ -126,15 +158,44 @@ class RegSet8Bit(Elaboratable):
                 sync += vsp_reg.eq(self.dat_i)
             with m.Elif(self.adr_i == 9):
                 sync += vct_reg.eq(self.dat_i[0:len(vct_reg)])
+            with m.Elif((self.adr_i == 18) & ~incr_updloc):
+                sync += self.update_location[8:16].eq(self.dat_i)
+            with m.Elif((self.adr_i == 19) & ~incr_updloc):
+                sync += self.update_location[0:8].eq(self.dat_i)
             with m.Elif(self.adr_i == 22):
                 sync += [
                     hct_reg.eq(self.dat_i[4:8]),
                     hcd_reg.eq(self.dat_i[0:4]),
                 ]
+            with m.Elif(self.adr_i == 24):
+                sync += [
+                    self.vscroll.eq(self.dat_i[0:len(self.vscroll)]),
+                    self.blink_rate.eq(self.dat_i[5]),
+                    self.reverse_screen.eq(self.dat_i[6]),
+                    self.block_copy.eq(self.dat_i[7]),
+                ]
+            with m.Elif((self.adr_i == 30) & ~self.decr_bytecnt):
+                sync += self.bytecnt.eq(self.dat_i)
+            with m.Elif(self.adr_i == 31):
+                sync += self.cpudataw.eq(self.dat_i)
+            with m.Elif((self.adr_i == 32) & ~self.incr_copysrc):
+                sync += self.copysrc[8:16].eq(self.dat_i)
+            with m.Elif((self.adr_i == 33) & ~self.incr_copysrc):
+                sync += self.copysrc[0:8].eq(self.dat_i)
             with m.Elif(self.adr_i == 37):
                 sync += [
                     hsync_xor_reg.eq(self.dat_i[7]),
                     vsync_xor_reg.eq(self.dat_i[6]),
                 ]
+
+        # Handle updates to pointer registers.
+        with m.If(incr_updloc):
+            sync += self.update_location.eq(self.update_location + 1)
+
+        with m.If(self.incr_copysrc):
+            sync += self.copysrc.eq(self.copysrc + 1)
+
+        with m.If(self.decr_bytecnt):
+            sync += self.bytecnt.eq(self.bytecnt - 1)
 
         return m

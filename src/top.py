@@ -182,7 +182,6 @@ class Top(Elaboratable):
             hostbus.d.eq(bus.db.i),
             hostbus.cs.eq(bus.cs.i),
 
-            hostbus.ready_i.eq(1),
             hostbus.vblank_i.eq(0),
             hostbus.lp_i.eq(0),
 
@@ -203,6 +202,7 @@ class Top(Elaboratable):
 
             ## Outputs
             hostbus.dat_i.eq(vdc2.dat_o),
+            hostbus.ready_i.eq(vdc2.ready_o),
 
             # Video
             ## Outputs
@@ -211,6 +211,8 @@ class Top(Elaboratable):
             video.blu.o.eq(Cat(vdc2.i, vdc2.b)),
             video.grn.o.eq(Cat(vdc2.i, vdc2.g)),
             video.red.o.eq(Cat(vdc2.i, vdc2.r)),
+
+            hostbus.vblank_i.eq(vdc2.raw_vs),
         ]
 
         return m
