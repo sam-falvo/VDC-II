@@ -218,8 +218,11 @@ class SyncGenFormal(Elaboratable):
         # The horizontal display counter tracks how long to enable the display for.
         #
 
-        with m.If(self.fv_xdctr != 0):
+        with m.If((self.fv_xdctr != 0) & ~self.fv_adj):
             comb += Assert(self.xden)
+
+        with m.If(self.fv_adj):
+            comb += Assert(~self.xden)
 
         with m.If(self.fv_xdctr == 0):
             comb += Assert(~self.xden)

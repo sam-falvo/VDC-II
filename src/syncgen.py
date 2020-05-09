@@ -155,7 +155,7 @@ class SyncGen(Elaboratable):
         xdctr = Signal(len(self.xd))
 
         comb += [
-            self.xden.eq(xdctr != 0),
+            self.xden.eq((xdctr != 0) & ~adj),
         ]
 
         with m.If(self.dotclken):
