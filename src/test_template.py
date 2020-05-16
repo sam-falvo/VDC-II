@@ -64,17 +64,11 @@ class XxXxFormal(Elaboratable):
 
         # Connect DUT outputs
         comb += [
-            self.dat_o.eq(dut.dat_o),
         ]
 
         # Connect DUT inputs.  These will be driven by the formal verifier
         # for us, based on assertions and assumptions.
         comb += [
-            dut.dat_i.eq(self.dat_i),
-            dut.we_i.eq(self.we_i),
-            dut.aadr_i.eq(self.aadr_i),
-            dut.cadr_i.eq(self.cadr_i),
-            dut.padr_i.eq(self.padr_i),
         ]
 
         return m
