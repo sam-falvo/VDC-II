@@ -163,6 +163,16 @@ def create_regset8bit_interface(self, platform=''):
     self.blink_rate = Signal(1)
     self.reverse_screen = Signal(1)
     self.block_copy = Signal(1)
+    # TODO(sfalvo): R25
+    # x... ....  Text (0)/Bitmapped (1) mode        self.bitmap_mode = Signal(1)
+    # .x.. ....  Attribute enable                   self.attr_enabled = Signal(1)
+    # ..x. ....  Semigraphic Mode                   self.semigraphic_mode = Signal(1)
+    # ...x ....  Dot clock select (0=640H, 1=320H)  self.dotclock_select = Signal(1)
+    # .... xxxx  Horizontal smooth scroll           self.hscroll = Signal(4)
+
+    # TODO(sfalvo): R26
+    # xxxx ....  Foreground color (RGBI)            self.fgpen = Signal(4)
+    # .... xxxx  Background color (RGBI)            self.bgpen = Signal(4)
 
     # Memory Port Engine/DMA Engine Interface
     ## Inputs
