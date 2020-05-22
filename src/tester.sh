@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 
 block_for_change() {
 	inotifywait --event modify $1.py

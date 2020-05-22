@@ -63,6 +63,13 @@ class RegSet8BitFormal(Elaboratable):
             self.blink_rate.eq(dut.blink_rate),
             self.reverse_screen.eq(dut.reverse_screen),
             self.block_copy.eq(dut.block_copy),
+            self.bitmap_mode.eq(dut.bitmap_mode),
+            self.attr_enable.eq(dut.attr_enable),
+            self.semigraphic_mode.eq(dut.semigraphic_mode),
+            self.dotclock_select.eq(dut.dotclock_select),
+            self.hscroll.eq(dut.hscroll),
+            self.fgpen.eq(dut.fgpen),
+            self.bgpen.eq(dut.bgpen),
 
             self.dat_o.eq(dut.dat_o),
 
@@ -143,6 +150,21 @@ class RegSet8BitFormal(Elaboratable):
                 self.blink_rate,
                 self.reverse_screen,
                 self.block_copy,
+            ))
+
+        with m.If(self.adr_i == 25):
+            comb += Assert(self.dat_o == Cat(
+                self.hscroll,
+                self.dotclock_select,
+                self.semigraphic_mode,
+                self.attr_enable,
+                self.bitmap_mode,
+            ))
+
+        with m.If(self.adr_i == 26):
+            comb += Assert(self.dat_o == Cat(
+                self.bgpen,
+                self.fgpen,
             ))
 
         with m.If(self.adr_i == 30):

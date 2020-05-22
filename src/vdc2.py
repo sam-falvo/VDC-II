@@ -25,6 +25,7 @@ from regset8bit import RegSet8Bit
 from syncgen import SyncGen
 from ram import RAM
 from mpe import MPE
+from test_shifter import Shifter
 
 from interfaces import create_vdc2_interface
 
@@ -91,10 +92,6 @@ class VDC2(Elaboratable):
             self.hs.eq(hsyncgen.xs ^ regset.hsync_xor),
             self.vs.eq(vsyncgen.xs ^ regset.vsync_xor),
             self.raw_vs.eq(vsyncgen.xs),
-            self.r.eq(hsyncgen.xclken & den),
-            self.g.eq(vsyncgen.xclken & den),
-            self.b.eq(0),
-            self.i.eq(den),
         ]
 
         # Video Block RAM and MPE
@@ -119,6 +116,7 @@ class VDC2(Elaboratable):
             mpe.copysrc.eq(regset.copysrc),
             mpe.bytecnt.eq(regset.bytecnt),
 
+            # TODO(sfalvo):
             # Just for now; we need to route this connection to a
             # proper arbiter to support video fetch, etc.
             vram.adr_i.eq(mpe.mem_adr_o),
@@ -127,6 +125,27 @@ class VDC2(Elaboratable):
             mpe.mem_dat_i.eq(vram.dat_o),
             mpe.mem_stall_i.eq(0),
             mpe.mem_ack_i.eq(1),
+        ]
+
+        # Shifter
+        shifter = m.submodules.shifter = Shifter()
+        comb += [
+            shifter.hclken.eq(hsyncgen.xclken),
+            shifter.den.eq(den),
+            shifter.hscroll.eq(regset.hscroll),
+            shifter.hcd.eq(regset.hcd),
+            shifter.hct.eq(regset.hct),
+            shifter.fgpen.eq(regset.fgpen),
+            shifter.bgpen.eq(regset.bgpen),
+            shifter.attr_enable.eq(regset.attr_enable),
+
+            # TODO(sfalvo): DEBUG.  Connect to strip buffer later.
+            shifter.attrpen.eq(0),
+
+            self.r.eq(shifter.outpen[3]),
+            self.g.eq(shifter.outpen[2]),
+            self.b.eq(shifter.outpen[1]),
+            self.i.eq(shifter.outpen[0]),
         ]
 
         return m

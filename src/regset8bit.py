@@ -100,6 +100,14 @@ class RegSet8Bit(Elaboratable):
                 self.reverse_screen,
                 self.block_copy
             ),
+            25: Cat(
+                self.hscroll,
+                self.dotclock_select,
+                self.semigraphic_mode,
+                self.attr_enable,
+                self.bitmap_mode,
+            ),
+            26: Cat(self.bgpen, self.fgpen),
             30: self.bytecnt,
             31: self.cpudatar,
             32: self.copysrc[8:16],
@@ -173,6 +181,19 @@ class RegSet8Bit(Elaboratable):
                     self.blink_rate.eq(self.dat_i[5]),
                     self.reverse_screen.eq(self.dat_i[6]),
                     self.block_copy.eq(self.dat_i[7]),
+                ]
+            with m.Elif(self.adr_i == 25):
+                sync += [
+                    self.hscroll.eq(self.dat_i[0:len(self.hscroll)]),
+                    self.dotclock_select.eq(self.dat_i[4]),
+                    self.semigraphic_mode.eq(self.dat_i[5]),
+                    self.attr_enable.eq(self.dat_i[6]),
+                    self.bitmap_mode.eq(self.dat_i[7]),
+                ]
+            with m.Elif(self.adr_i == 26):
+                sync += [
+                    self.bgpen.eq(self.dat_i[0:4]),
+                    self.fgpen.eq(self.dat_i[4:8]),
                 ]
             with m.Elif((self.adr_i == 30) & ~self.decr_bytecnt):
                 sync += self.bytecnt.eq(self.dat_i)
