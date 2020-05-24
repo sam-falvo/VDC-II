@@ -1,4 +1,5 @@
 from nmigen import (
+    Cat,
     ClockDomain,
     ClockSignal,
     Const,
@@ -128,24 +129,92 @@ class VDC2(Elaboratable):
         ]
 
         # Shifter
+        char_byte = Signal(8)
+        attr_byte = Signal(8)
+        
+        adr = Signal(3)
+        swap_state = Signal(1)
+
         shifter = m.submodules.shifter = Shifter()
         comb += [
             shifter.hclken.eq(hsyncgen.xclken),
             shifter.den.eq(den),
+            shifter.hs.eq(hsyncgen.xs),
+            shifter.vs.eq(vsyncgen.xs),
+            shifter.vden.eq(vsyncgen.xden),
+
             shifter.hscroll.eq(regset.hscroll),
             shifter.hcd.eq(regset.hcd),
             shifter.hct.eq(regset.hct),
             shifter.fgpen.eq(regset.fgpen),
             shifter.bgpen.eq(regset.bgpen),
             shifter.attr_enable.eq(regset.attr_enable),
+            shifter.blink_rate.eq(regset.blink_rate),
+            shifter.reverse_screen.eq(regset.reverse_screen),
 
             # TODO(sfalvo): DEBUG.  Connect to strip buffer later.
-            shifter.attrpen.eq(0),
+            shifter.attr_pen.eq(attr_byte[0:4]),
+            shifter.attr_blink.eq(attr_byte[4]),
+            shifter.attr_rvs.eq(attr_byte[6]),
+            shifter.char_bm.eq(char_byte),
+
+            shifter.done_prefetch.eq(1),
 
             self.r.eq(shifter.outpen[3]),
             self.g.eq(shifter.outpen[2]),
             self.b.eq(shifter.outpen[1]),
             self.i.eq(shifter.outpen[0]),
+
+            #self.r.eq(shifter.swap_strip),
+            #self.g.eq(0),
+            #self.b.eq(0),
+            #self.i.eq(swap_state),
         ]
+
+        comb += adr.eq(Cat(shifter.padr, swap_state))
+
+        with m.If(shifter.swap_strip):
+            sync += swap_state.eq(swap_state ^ 1)
+
+        with m.If(adr == 0):
+            comb += [
+                char_byte.eq(0xC0),
+                attr_byte.eq(0x02),
+            ]
+        with m.Elif(adr == 1):
+            comb += [
+                char_byte.eq(0xF0),
+                attr_byte.eq(0x04),
+            ]
+        with m.Elif(adr == 2):
+            comb += [
+                char_byte.eq(0xFC),
+                attr_byte.eq(0x06),
+            ]
+        with m.Elif(adr == 3):
+            comb += [
+                char_byte.eq(0xCC),
+                attr_byte.eq(0x08),
+            ]
+        with m.Elif(adr == 4):
+            comb += [
+                char_byte.eq(0x3F),
+                attr_byte.eq(0x0A),
+            ]
+        with m.Elif(adr == 5):
+            comb += [
+                char_byte.eq(0x0F),
+                attr_byte.eq(0x0C),
+            ]
+        with m.Elif(adr == 6):
+            comb += [
+                char_byte.eq(0x03),
+                attr_byte.eq(0x0E),
+            ]
+        with m.Else():
+            comb += [
+                char_byte.eq(0x33),
+                attr_byte.eq(0x01),
+            ]
 
         return m
