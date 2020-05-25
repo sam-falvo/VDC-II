@@ -65,6 +65,7 @@ class ShifterFormal(Elaboratable):
             self.go_prefetch.eq(dut.go_prefetch),
             self.swap_strip.eq(dut.swap_strip),
             self.padr.eq(dut.padr),
+            self.atrptr.eq(dut.atrptr),
         ]
 
         # Connect DUT inputs.  These will be driven by the formal verifier
@@ -86,6 +87,7 @@ class ShifterFormal(Elaboratable):
             dut.attr_rvs.eq(self.attr_rvs),
             #dut.attr_underline.eq(self.attr_underline),
             dut.attr_blink.eq(self.attr_blink),
+            dut.atrbase.eq(self.atrbase),
         ]
 
         # Assumption: hclken is a pulse, and is never asserted more than
@@ -205,7 +207,10 @@ class ShifterFormal(Elaboratable):
                     sync += Assert(self.fv_sbsm_wait_vden)
                 with m.Else():
                     with m.If(Past(self.vden)):
-                        sync += Assert(self.fv_sbsm_prefetch)
+                        sync += [
+                            Assert(self.fv_sbsm_prefetch),
+                            Assert(self.atrptr == Past(self.atrbase)),
+                        ]
                         comb += Assert(Past(self.go_prefetch))
                     with m.Else():
                         sync += Assert(self.fv_sbsm_wait_hs)

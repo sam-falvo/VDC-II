@@ -103,6 +103,7 @@ class Shifter(Elaboratable):
                     with m.If(self.vden):
                         m.next = "Prefetch"
                         comb += self.go_prefetch.eq(1)
+                        sync += self.atrptr.eq(self.atrbase)
                     with m.Else():
                         m.next = "WaitHS"
 
