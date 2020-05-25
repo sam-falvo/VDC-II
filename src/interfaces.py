@@ -14,46 +14,61 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
-def create_blockram_arbiter_interface(self, platform=None, asize=14):
-    # VFE Memory Interface
+def create_shifter_interface(self, platform=None):
+    # CRTC Interface
     ## Inputs
-    self.vfe_adr_i = Signal(asize)
-    self.vfe_cyc_i = Signal(1)
-    self.vfe_dat_i = Signal(8)
-    self.vfe_stb_i = Signal(1)
-    self.vfe_we_i = Signal(1)
+    self.hclken = Signal(1)
+    self.den = Signal(1)
+    self.hs = Signal(1)
+    self.vs = Signal(1)
+    self.vden = Signal(1)
+
+    # Register Set Interface
+    ## Inputs
+    self.hscroll = Signal(4)
+    self.hcd = Signal(4)
+    self.hct = Signal(4)
+    self.fgpen = Signal(4)
+    self.bgpen = Signal(4)
+    self.attr_enable = Signal(1)
+    self.blink_rate = Signal(1)
+    self.reverse_screen = Signal(1)
+
+    # Video Interface
+    ## Outputs
+    self.outpen = Signal(4)
+
+    # Strip Buffer Interface
+    ## Inputs
+    self.attr_pen = Signal(4)
+    self.attr_rvs = Signal(1)
+    #self.attr_underline = Signal(1)
+    self.attr_blink = Signal(1)
+    self.char_bm = Signal(8)
+    self.done_prefetch = Signal(1)
 
     ## Outputs
-    self.vfe_ack_o = Signal(1)
-    self.vfe_dat_o = Signal(8)
-    self.vfe_stall_o = Signal(1)
-
-    # MPE Memory Interface
-    ## Inputs
-    self.mpe_adr_i = Signal(asize)
-    self.mpe_cyc_i = Signal(1)
-    self.mpe_dat_i = Signal(8)
-    self.mpe_stb_i = Signal(1)
-    self.mpe_we_i = Signal(1)
-
-    ## Outputs
-    self.mpe_ack_o = Signal(1)
-    self.mpe_dat_o = Signal(8)
-    self.mpe_stall_o = Signal(1)
-
-    # Block RAM Interface
-    ## Inputs
-    self.dat_i = Signal(8)
-
-    ## Outputs
-    self.adr_o = Signal(asize)
-    self.dat_o = Signal(8)
-    self.we_o = Signal(1)
+    self.go_prefetch = Signal(1)
+    self.swap_strip = Signal(1)
+    self.padr = Signal(2)
 
     if platform == 'formal':
-        pass
+        self.fv_reveal_ctr = Signal(4)
+        self.fv_conceal_ctr = Signal(4)
+        self.fv_chrgate = Signal(1)
+        self.fv_dot = Signal(1)
+        self.fv_sbsm_wait_hs = Signal(1)
+        self.fv_sbsm_wait_vden = Signal(1)
+        self.fv_sbsm_prefetch = Signal(1)
+        self.fv_sbsm_wait_den = Signal(1)
+        self.fv_lpic = Signal(1)
+        self.fv_sbsm_column0 = Signal(1)
+        self.fv_sbsm_column1 = Signal(1)
+        self.fv_sbsm_column2 = Signal(1)
+        self.fv_sbsm_column3 = Signal(1)
+        self.fv_pixctr = Signal(3)
 
-    
+
 def create_mpe_interface(self, platform='', abus_width=14):
     # Register-File Interface
     ## Outputs
