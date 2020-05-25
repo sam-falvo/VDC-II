@@ -14,6 +14,46 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
+def create_blockram_arbiter_interface(self, platform=None, asize=14):
+    # VFE Memory Interface
+    ## Inputs
+    self.vfe_adr_i = Signal(asize)
+    self.vfe_cyc_i = Signal(1)
+    self.vfe_dat_i = Signal(8)
+    self.vfe_stb_i = Signal(1)
+    self.vfe_we_i = Signal(1)
+
+    ## Outputs
+    self.vfe_ack_o = Signal(1)
+    self.vfe_dat_o = Signal(8)
+    self.vfe_stall_o = Signal(1)
+
+    # MPE Memory Interface
+    ## Inputs
+    self.mpe_adr_i = Signal(asize)
+    self.mpe_cyc_i = Signal(1)
+    self.mpe_dat_i = Signal(8)
+    self.mpe_stb_i = Signal(1)
+    self.mpe_we_i = Signal(1)
+
+    ## Outputs
+    self.mpe_ack_o = Signal(1)
+    self.mpe_dat_o = Signal(8)
+    self.mpe_stall_o = Signal(1)
+
+    # Block RAM Interface
+    ## Inputs
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.adr_o = Signal(asize)
+    self.dat_o = Signal(8)
+    self.we_o = Signal(1)
+
+    if platform == 'formal':
+        pass
+
+    
 def create_mpe_interface(self, platform='', abus_width=14):
     # Register-File Interface
     ## Outputs

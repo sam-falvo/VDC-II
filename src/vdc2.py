@@ -164,11 +164,6 @@ class VDC2(Elaboratable):
             self.g.eq(shifter.outpen[2]),
             self.b.eq(shifter.outpen[1]),
             self.i.eq(shifter.outpen[0]),
-
-            #self.r.eq(shifter.swap_strip),
-            #self.g.eq(0),
-            #self.b.eq(0),
-            #self.i.eq(swap_state),
         ]
 
         comb += adr.eq(Cat(shifter.padr, swap_state))
