@@ -14,6 +14,38 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
+def create_strip_buffer_interface(self, platform=None):
+    # Video Fetch Engine Interface
+    ## Inputs
+    self.padr = Signal(2)
+    self.cwe = Signal(1)
+    self.awe = Signal(1)
+    self.wadr = Signal(2)
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.pair = Signal(16)
+
+    # Shifter Interface
+    ## Inputs
+    self.sh_padr = Signal(2)
+    self.swap = Signal(1)
+
+    ## Outputs
+    self.sh_pair = Signal(16)
+
+    if platform == 'formal':
+        self.fv_col0a = Signal(16)
+        self.fv_col1a = Signal(16)
+        self.fv_col2a = Signal(16)
+        self.fv_col3a = Signal(16)
+        self.fv_col0b = Signal(16)
+        self.fv_col1b = Signal(16)
+        self.fv_col2b = Signal(16)
+        self.fv_col3b = Signal(16)
+        self.fv_ab = Signal(1)
+
+
 def create_video_fetch_interface(self, platform=None):
     # Video Timing Interface
     ## Inputs
