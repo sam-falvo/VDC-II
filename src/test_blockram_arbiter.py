@@ -23,7 +23,7 @@ from blockram_arbiter import BlockRamArbiter
 class BlockRamArbiterFormal(Elaboratable):
     def __init__(self):
         super().__init__()
-        create_blockram_arbiter_interface(self, platform="formal")
+        create_blockram_arbiter_interface(self, platform="formal", asize=16)
 
     def elaborate(self, platform):
         m = Module()
@@ -37,7 +37,7 @@ class BlockRamArbiterFormal(Elaboratable):
         z_past_valid = Signal(1, reset=0)
         sync += z_past_valid.eq(1)
 
-        dut = BlockRamArbiter(platform=platform)
+        dut = BlockRamArbiter(platform=platform, asize=16)
         m.submodules.dut = dut
         rst = ResetSignal()
 

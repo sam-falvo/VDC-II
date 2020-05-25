@@ -8,8 +8,8 @@ from interfaces import create_blockram_arbiter_interface
 
 
 class BlockRamArbiter(Elaboratable):
-    def __init__(self, platform=None):
-        create_blockram_arbiter_interface(self, platform=platform)
+    def __init__(self, platform=None, asize=14):
+        create_blockram_arbiter_interface(self, platform=platform, asize=asize)
 
     def elaborate(self, platform):
         m = Module()
