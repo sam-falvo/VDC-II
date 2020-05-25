@@ -70,6 +70,7 @@ class RegSet8BitFormal(Elaboratable):
             self.hscroll.eq(dut.hscroll),
             self.fgpen.eq(dut.fgpen),
             self.bgpen.eq(dut.bgpen),
+            self.atrbase.eq(dut.atrbase),
 
             self.dat_o.eq(dut.dat_o),
 
@@ -140,6 +141,12 @@ class RegSet8BitFormal(Elaboratable):
                 comb += Assert(self.go_wr_updloc)
             with m.Else():
                 comb += Assert(~self.go_wr_updloc)
+
+        with m.If(self.adr_i == 20):
+            comb += Assert(self.dat_o == self.atrbase[8:16])
+
+        with m.If(self.adr_i == 21):
+            comb += Assert(self.dat_o == self.atrbase[0:8])
 
         with m.If(self.adr_i == 22):
             comb += Assert(self.dat_o == Cat(self.hcd, self.hct))

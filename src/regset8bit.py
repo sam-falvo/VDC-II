@@ -93,6 +93,8 @@ class RegSet8Bit(Elaboratable):
             9: Cat(self.vct, Const(-1, 8-len(self.vct))),
             18: self.update_location[8:16],
             19: self.update_location[0:8],
+            20: self.atrbase[8:16],
+            21: self.atrbase[0:8],
             22: Cat(self.hcd, self.hct),
             24: Cat(
                 self.vscroll,
@@ -170,6 +172,10 @@ class RegSet8Bit(Elaboratable):
                 sync += self.update_location[8:16].eq(self.dat_i)
             with m.Elif((self.adr_i == 19) & ~incr_updloc):
                 sync += self.update_location[0:8].eq(self.dat_i)
+            with m.Elif(self.adr_i == 20):
+                sync += self.atrbase[8:16].eq(self.dat_i)
+            with m.Elif(self.adr_i == 21):
+                sync += self.atrbase[0:8].eq(self.dat_i)
             with m.Elif(self.adr_i == 22):
                 sync += [
                     hct_reg.eq(self.dat_i[4:8]),

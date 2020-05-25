@@ -136,10 +136,14 @@ def create_shifter_interface(self, platform=None):
     self.attr_enable = Signal(1)
     self.blink_rate = Signal(1)
     self.reverse_screen = Signal(1)
+    self.atrbase = Signal(16)
 
     # Video Interface
     ## Outputs
     self.outpen = Signal(4)
+
+    # Video Fetch Engine Interface
+    self.atrptr = Signal(16)
 
     # Strip Buffer Interface
     ## Inputs
@@ -368,6 +372,7 @@ def create_regset8bit_interface(self, platform=''):
     self.hscroll = Signal(4)
     self.fgpen = Signal(4)
     self.bgpen = Signal(4)
+    self.atrbase = Signal(16)
 
     # Memory Port Engine/DMA Engine Interface
     ## Inputs
