@@ -384,6 +384,7 @@ def create_regset8bit_interface(self, platform=''):
     self.bgpen = Signal(4)
     self.atrbase = Signal(16)
     self.tallfont = Signal(1)
+    self.fontbase = Signal(3)
 
     # Memory Port Engine/DMA Engine Interface
     ## Inputs

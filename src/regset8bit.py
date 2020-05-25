@@ -111,6 +111,7 @@ class RegSet8Bit(Elaboratable):
                 self.bitmap_mode,
             ),
             26: Cat(self.bgpen, self.fgpen),
+            28: Cat(Const(-1, 5), self.fontbase),
             30: self.bytecnt,
             31: self.cpudatar,
             32: self.copysrc[8:16],
@@ -202,6 +203,8 @@ class RegSet8Bit(Elaboratable):
                     self.bgpen.eq(self.dat_i[0:4]),
                     self.fgpen.eq(self.dat_i[4:8]),
                 ]
+            with m.Elif(self.adr_i == 28):
+                sync += self.fontbase.eq(self.dat_i[5:8])
             with m.Elif((self.adr_i == 30) & ~self.decr_bytecnt):
                 sync += self.bytecnt.eq(self.dat_i)
             with m.Elif(self.adr_i == 31):

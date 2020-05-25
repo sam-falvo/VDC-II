@@ -72,6 +72,7 @@ class RegSet8BitFormal(Elaboratable):
             self.bgpen.eq(dut.bgpen),
             self.atrbase.eq(dut.atrbase),
             self.tallfont.eq(dut.tallfont),
+            self.fontbase.eq(dut.fontbase),
 
             self.dat_o.eq(dut.dat_o),
 
@@ -174,6 +175,9 @@ class RegSet8BitFormal(Elaboratable):
                 self.bgpen,
                 self.fgpen,
             ))
+
+        with m.If(self.adr_i == 28):
+            comb += Assert(self.dat_o[5:8] == self.fontbase)
 
         with m.If(self.adr_i == 30):
             comb += Assert(self.dat_o == self.bytecnt)

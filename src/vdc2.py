@@ -132,6 +132,7 @@ class VDC2(Elaboratable):
             stripbuf.cwe.eq(vfe.cwe),
             stripbuf.padr.eq(vfe.padr),
             stripbuf.wadr.eq(vfe.wadr),
+            stripbuf.dat_i.eq(arb.vfe_dat_o),
         ]
 
         ## MPE
@@ -197,8 +198,15 @@ class VDC2(Elaboratable):
             #shifter.attr_underline.eq(stripbuf.sh_pair[13]),
             shifter.attr_rvs.eq(stripbuf.sh_pair[14]),
             shifter.char_bm.eq(stripbuf.sh_pair[0:8]),
+            stripbuf.sh_padr.eq(shifter.padr),
+            stripbuf.swap.eq(shifter.swap_strip),
 
             shifter.done_prefetch.eq(1),
+
+            #self.r.eq(stripbuf.sh_pair[3]),
+            #self.g.eq(stripbuf.sh_pair[2]),
+            #self.b.eq(stripbuf.sh_padr[1]),
+            #self.i.eq(stripbuf.sh_padr[0]),
 
             self.r.eq(shifter.outpen[3]),
             self.g.eq(shifter.outpen[2]),
