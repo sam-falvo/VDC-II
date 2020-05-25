@@ -14,6 +14,77 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
+def create_video_fetch_interface(self, platform=None):
+    # Video Timing Interface
+    ## Inputs
+    self.atrptr = Signal(16)
+    self.chrptr = Signal(len(self.atrptr))
+    self.go_i = Signal(1)
+    self.ldptr = Signal(1)
+    self.ra = Signal(5)
+
+    # Register Set Interface
+    ## Inputs
+    self.attr_enable = Signal(1)
+    self.bitmap_mode = Signal(1)
+    self.fontbase = Signal(3)
+    self.tallfont = Signal(1)
+
+    ## Outputs
+
+    # Video Memory Interface
+    ## Inputs
+    self.ack_i = Signal(1)
+    self.stall_i = Signal(1)
+
+    ## Outputs
+    self.adr_o = Signal(len(self.atrptr))
+    self.cyc_o = Signal(1)
+    self.stb_o = Signal(1)
+
+    # Strip Buffer Interface
+    ## Inputs
+    self.charcode = Signal(9)
+
+    ## Outputs
+    self.awe = Signal(1)
+    self.cwe = Signal(1)
+    self.padr = Signal(2)
+    self.wadr = Signal(2)
+
+    if platform == 'formal':
+        self.fv_ag_a1 = Signal(1)
+        self.fv_ag_a2 = Signal(1)
+        self.fv_ag_a3 = Signal(1)
+        self.fv_ag_a4 = Signal(1)
+        self.fv_ag_c1 = Signal(1)
+        self.fv_ag_c2 = Signal(1)
+        self.fv_ag_c3 = Signal(1)
+        self.fv_ag_c4 = Signal(1)
+        self.fv_ag_f1 = Signal(1)
+        self.fv_ag_f2 = Signal(1)
+        self.fv_ag_f3 = Signal(1)
+        self.fv_ag_f4 = Signal(1)
+        self.fv_ag_go_font = Signal(1)
+        self.fv_ag_idle = Signal(1)
+        self.fv_atrptr = Signal(len(self.adr_o))
+        self.fv_chrptr = Signal(len(self.adr_o))
+        self.fv_dr_idle = Signal(1)
+        self.fv_dr_a1 = Signal(1)
+        self.fv_dr_a2 = Signal(1)
+        self.fv_dr_a3 = Signal(1)
+        self.fv_dr_a4 = Signal(1)
+        self.fv_dr_c1 = Signal(1)
+        self.fv_dr_c2 = Signal(1)
+        self.fv_dr_c3 = Signal(1)
+        self.fv_dr_c4 = Signal(1)
+        self.fv_dr_f1 = Signal(1)
+        self.fv_dr_f2 = Signal(1)
+        self.fv_dr_f3 = Signal(1)
+        self.fv_dr_f4 = Signal(1)
+        self.fv_bitmap_mode = Signal(1)
+
+
 def create_shifter_interface(self, platform=None):
     # CRTC Interface
     ## Inputs
