@@ -79,6 +79,7 @@ class RegSet8Bit(Elaboratable):
             self.hcd.eq(hcd_reg),
             self.hsync_xor.eq(hsync_xor_reg),
             self.vsync_xor.eq(vsync_xor_reg),
+            self.tallfont.eq(vct_reg[4]),
         ]
 
         # Handle read data routing

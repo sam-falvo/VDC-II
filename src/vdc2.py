@@ -26,7 +26,10 @@ from regset8bit import RegSet8Bit
 from syncgen import SyncGen
 from ram import RAM
 from mpe import MPE
-from test_shifter import Shifter
+from shifter import Shifter
+from video_fetch import VideoFetch
+from blockram_arbiter import BlockRamArbiter
+from strip_buffer import StripBuffer
 
 from interfaces import create_vdc2_interface
 
@@ -45,8 +48,20 @@ class VDC2(Elaboratable):
         sync = m.d.sync
         comb = m.d.comb
 
-        # Register Set (R0-R..)
         regset = m.submodules.regset = RegSet8Bit()
+        hsyncgen = m.submodules.hsyncgen = SyncGen()
+        vsyncgen = m.submodules.vsyncgen = SyncGen(
+            char_total_bits=5,
+            adj_bits=5,
+        )
+        shifter = m.submodules.shifter = Shifter()
+        vfe = m.submodules.vfe = VideoFetch()
+        mpe = m.submodules.mpe = MPE(abus_width=14)
+        vram = m.submodules.vram = RAM(abus_width=14)
+        arb = m.submodules.arb = BlockRamArbiter()
+        stripbuf = m.submodules.stripbuf = StripBuffer()
+
+        # Register Set (R0-R..)
 
         comb += [
             # Inputs
@@ -60,11 +75,6 @@ class VDC2(Elaboratable):
 
         # Sync Generators
 
-        hsyncgen = m.submodules.hsyncgen = SyncGen()
-        vsyncgen = m.submodules.vsyncgen = SyncGen(
-            char_total_bits=5,
-            adj_bits=5,
-        )
         den = Signal(1)
 
         comb += [
@@ -95,13 +105,39 @@ class VDC2(Elaboratable):
             self.raw_vs.eq(vsyncgen.xs),
         ]
 
-        # Video Block RAM and MPE
+        ## VFE
 
-        vram = m.submodules.vram = RAM(abus_width=14)
-        mpe = m.submodules.mpe = MPE(abus_width=14)
+        comb += [
+            vfe.atrptr.eq(shifter.atrptr),
+            vfe.chrptr.eq(shifter.chrptr),
+            vfe.go_i.eq(shifter.go_prefetch),
+            vfe.ldptr.eq(shifter.go_ldptr),
+            vfe.ra.eq(shifter.ra),
+
+            vfe.attr_enable.eq(regset.attr_enable),
+            vfe.bitmap_mode.eq(regset.bitmap_mode),
+            vfe.fontbase.eq(regset.fontbase),
+            vfe.tallfont.eq(regset.tallfont),
+
+            vfe.ack_i.eq(arb.vfe_ack_o),
+            vfe.stall_i.eq(arb.vfe_stall_o),
+            arb.vfe_adr_i.eq(vfe.adr_o),
+            arb.vfe_cyc_i.eq(vfe.cyc_o),
+            arb.vfe_dat_i.eq(0),
+            arb.vfe_stb_i.eq(vfe.stb_o),
+            arb.vfe_we_i.eq(0),
+
+            vfe.charcode.eq(Cat(stripbuf.pair[0:8], stripbuf.pair[15])),
+            stripbuf.awe.eq(vfe.awe),
+            stripbuf.cwe.eq(vfe.cwe),
+            stripbuf.padr.eq(vfe.padr),
+            stripbuf.wadr.eq(vfe.wadr),
+        ]
+
+        ## MPE
+
         comb += [
             self.ready_o.eq(mpe.ready),
-
             regset.cpudatar.eq(mpe.cpudatar),
             regset.incr_updloc.eq(mpe.incr_updloc),
             regset.incr_copysrc.eq(mpe.incr_copysrc),
@@ -117,25 +153,27 @@ class VDC2(Elaboratable):
             mpe.copysrc.eq(regset.copysrc),
             mpe.bytecnt.eq(regset.bytecnt),
 
-            # TODO(sfalvo):
-            # Just for now; we need to route this connection to a
-            # proper arbiter to support video fetch, etc.
-            vram.adr_i.eq(mpe.mem_adr_o),
-            vram.we_i.eq(mpe.mem_we_o),
-            vram.dat_i.eq(mpe.mem_dat_o),
-            mpe.mem_dat_i.eq(vram.dat_o),
-            mpe.mem_stall_i.eq(0),
-            mpe.mem_ack_i.eq(1),
+            arb.mpe_cyc_i.eq(mpe.mem_cyc_o),
+            arb.mpe_stb_i.eq(mpe.mem_stb_o),
+            arb.mpe_adr_i.eq(mpe.mem_adr_o),
+            arb.mpe_we_i.eq(mpe.mem_we_o),
+            arb.mpe_dat_i.eq(mpe.mem_dat_o),
+            mpe.mem_stall_i.eq(arb.mpe_stall_o),
+            mpe.mem_ack_i.eq(arb.mpe_ack_o),
+            mpe.mem_dat_i.eq(arb.mpe_dat_o),
+        ]
+
+        # Block RAM and arbiter
+
+        comb += [
+            vram.adr_i.eq(arb.adr_o),
+            vram.we_i.eq(arb.we_o),
+            vram.dat_i.eq(arb.dat_o),
+            arb.dat_i.eq(vram.dat_o),
         ]
 
         # Shifter
-        char_byte = Signal(8)
-        attr_byte = Signal(8)
-        
-        adr = Signal(3)
-        swap_state = Signal(1)
 
-        shifter = m.submodules.shifter = Shifter()
         comb += [
             shifter.hclken.eq(hsyncgen.xclken),
             shifter.den.eq(den),
@@ -144,19 +182,21 @@ class VDC2(Elaboratable):
             shifter.vden.eq(vsyncgen.xden),
 
             shifter.hscroll.eq(regset.hscroll),
+            shifter.vscroll.eq(regset.vscroll),
             shifter.hcd.eq(regset.hcd),
             shifter.hct.eq(regset.hct),
+            shifter.vct.eq(regset.vct),
             shifter.fgpen.eq(regset.fgpen),
             shifter.bgpen.eq(regset.bgpen),
             shifter.attr_enable.eq(regset.attr_enable),
             shifter.blink_rate.eq(regset.blink_rate),
             shifter.reverse_screen.eq(regset.reverse_screen),
 
-            # TODO(sfalvo): DEBUG.  Connect to strip buffer later.
-            shifter.attr_pen.eq(attr_byte[0:4]),
-            shifter.attr_blink.eq(attr_byte[4]),
-            shifter.attr_rvs.eq(attr_byte[6]),
-            shifter.char_bm.eq(char_byte),
+            shifter.attr_pen.eq(stripbuf.sh_pair[8:12]),
+            shifter.attr_blink.eq(stripbuf.sh_pair[12]),
+            #shifter.attr_underline.eq(stripbuf.sh_pair[13]),
+            shifter.attr_rvs.eq(stripbuf.sh_pair[14]),
+            shifter.char_bm.eq(stripbuf.sh_pair[0:8]),
 
             shifter.done_prefetch.eq(1),
 
@@ -165,51 +205,5 @@ class VDC2(Elaboratable):
             self.b.eq(shifter.outpen[1]),
             self.i.eq(shifter.outpen[0]),
         ]
-
-        comb += adr.eq(Cat(shifter.padr, swap_state))
-
-        with m.If(shifter.swap_strip):
-            sync += swap_state.eq(swap_state ^ 1)
-
-        with m.If(adr == 0):
-            comb += [
-                char_byte.eq(0xC0),
-                attr_byte.eq(0x02),
-            ]
-        with m.Elif(adr == 1):
-            comb += [
-                char_byte.eq(0xF0),
-                attr_byte.eq(0x04),
-            ]
-        with m.Elif(adr == 2):
-            comb += [
-                char_byte.eq(0xFC),
-                attr_byte.eq(0x06),
-            ]
-        with m.Elif(adr == 3):
-            comb += [
-                char_byte.eq(0xCC),
-                attr_byte.eq(0x08),
-            ]
-        with m.Elif(adr == 4):
-            comb += [
-                char_byte.eq(0x3F),
-                attr_byte.eq(0x0A),
-            ]
-        with m.Elif(adr == 5):
-            comb += [
-                char_byte.eq(0x0F),
-                attr_byte.eq(0x0C),
-            ]
-        with m.Elif(adr == 6):
-            comb += [
-                char_byte.eq(0x03),
-                attr_byte.eq(0x0E),
-            ]
-        with m.Else():
-            comb += [
-                char_byte.eq(0x33),
-                attr_byte.eq(0x01),
-            ]
 
         return m

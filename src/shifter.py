@@ -16,6 +16,54 @@ class Shifter(Elaboratable):
         sync = m.d.sync
         comb = m.d.comb
 
+        # Support for vertical smooth scroll in text mode.
+        # In bitmap mode, you'll need to update both the
+        # vscroll field AND the character base address.
+        # The former is needed to make sure attributes align
+        # with the raster selected by the character base address.
+
+        vden1 = Signal(1)
+        hs1 = Signal(1)
+        lastrow = Signal(1)
+
+        comb += lastrow.eq(self.ra == self.vct)
+
+        sync += [
+            vden1.eq(self.vden),
+            hs1.eq(self.hs),
+        ]
+
+        with m.If(~vden1 & self.vden):
+            sync += self.ra.eq(self.vscroll)
+        with m.Elif(hs1 & ~self.hs):
+            with m.If(~lastrow):
+                sync += self.ra.eq(self.ra + 1)
+            with m.Else():
+                sync += self.ra.eq(0)
+
+        # Support for atrptr, which tracks the start of the
+        # current *line's* attributes.  (The atrptr that tracks
+        # the current *character* is in the video fetch engine.)
+
+        bump_atrptr = Signal(1)
+
+        with m.If(~vden1 & self.vden):
+            sync += self.atrptr.eq(self.atrbase)
+        with m.Elif(bump_atrptr):
+            sync += self.atrptr.eq(self.atrptr + 1)
+
+        # Support for chrptr, which tracks the start of the
+        # current *line's* characters (except in bitmap mode;
+        # the atrptr that tracks the current *character* is
+        # in the video fetch engine.)
+
+        bump_chrptr = Signal(1)
+
+        with m.If(~vden1 & self.vden):
+            sync += self.chrptr.eq(self.chrbase)
+        with m.Elif(bump_chrptr):
+            sync += self.chrptr.eq(self.chrptr + 1)
+
         # Support for the blink attribute.
 
         blink_state = Signal(1)
@@ -102,8 +150,10 @@ class Shifter(Elaboratable):
                 with m.If(~self.hs):
                     with m.If(self.vden):
                         m.next = "Prefetch"
-                        comb += self.go_prefetch.eq(1)
-                        sync += self.atrptr.eq(self.atrbase)
+                        comb += [
+                            self.go_prefetch.eq(1),
+                            self.go_ldptr.eq(1),
+                        ]
                     with m.Else():
                         m.next = "WaitHS"
 
@@ -118,6 +168,10 @@ class Shifter(Elaboratable):
                 with m.If(self.den):
                     with m.If(reveal_ctr_z):
                         m.next = "Column1"
+                        comb += [
+                            bump_atrptr.eq(lastrow),
+                            bump_chrptr.eq(lastrow | self.bitmap_mode),
+                        ]
                     with m.Else():
                         m.next = "Column0"
                     comb += self.go_prefetch.eq(1)
@@ -127,6 +181,10 @@ class Shifter(Elaboratable):
                     m.next = "WaitHS"
                 with m.Else():
                     with m.If(reveal_ctr_z):
+                        comb += [
+                            bump_atrptr.eq(lastrow),
+                            bump_chrptr.eq(lastrow | self.bitmap_mode),
+                        ]
                         m.next = "Column1"
 
             with m.State("Column1"):
@@ -135,6 +193,10 @@ class Shifter(Elaboratable):
                     m.next = "WaitHS"
                 with m.Else():
                     with m.If(reveal_ctr_z):
+                        comb += [
+                            bump_atrptr.eq(lastrow),
+                            bump_chrptr.eq(lastrow | self.bitmap_mode),
+                        ]
                         m.next = "Column2"
 
             with m.State("Column2"):
@@ -143,6 +205,10 @@ class Shifter(Elaboratable):
                     m.next = "WaitHS"
                 with m.Else():
                     with m.If(reveal_ctr_z):
+                        comb += [
+                            bump_atrptr.eq(lastrow),
+                            bump_chrptr.eq(lastrow | self.bitmap_mode),
+                        ]
                         m.next = "Column3"
 
             with m.State("Column3"):
@@ -153,6 +219,8 @@ class Shifter(Elaboratable):
                     with m.If(reveal_ctr_z):
                         m.next = "Column0"
                         comb += [
+                            bump_atrptr.eq(lastrow),
+                            bump_chrptr.eq(lastrow | self.bitmap_mode),
                             self.go_prefetch.eq(1),
                             self.swap_strip.eq(1),
                         ]
@@ -228,6 +296,9 @@ class Shifter(Elaboratable):
                 self.fv_conceal_ctr.eq(conceal_ctr),
                 self.fv_chrgate.eq(chrgate),
                 self.fv_pixctr.eq(pixctr),
+                self.fv_lastrow.eq(lastrow),
+                self.fv_bump_atrptr.eq(bump_atrptr),
+                self.fv_bump_chrptr.eq(bump_chrptr),
             ]
 
         return m

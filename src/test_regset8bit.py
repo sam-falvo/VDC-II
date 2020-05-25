@@ -71,6 +71,7 @@ class RegSet8BitFormal(Elaboratable):
             self.fgpen.eq(dut.fgpen),
             self.bgpen.eq(dut.bgpen),
             self.atrbase.eq(dut.atrbase),
+            self.tallfont.eq(dut.tallfont),
 
             self.dat_o.eq(dut.dat_o),
 
@@ -225,6 +226,12 @@ class RegSet8BitFormal(Elaboratable):
         # The MPE is responsible for not underflowing the counter.
         with m.If(past_valid & Past(self.decr_bytecnt)):
             sync += Assert(self.bytecnt == (Past(self.bytecnt) - 1)[0:8])
+
+        # Font glyphs can be 16 bytes of 32 bytes tall, depending on the
+        # setting of R9[0:5].  tallfont is asserted if the glyphs are
+        # taken to be 32 bytes tall.
+        with m.If(self.vct[4]):
+            comb += Assert(self.tallfont)
 
         return m
 

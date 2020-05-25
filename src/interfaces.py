@@ -131,12 +131,16 @@ def create_shifter_interface(self, platform=None):
     self.hscroll = Signal(4)
     self.hcd = Signal(4)
     self.hct = Signal(4)
+    self.vct = Signal(5)
     self.fgpen = Signal(4)
     self.bgpen = Signal(4)
     self.attr_enable = Signal(1)
     self.blink_rate = Signal(1)
     self.reverse_screen = Signal(1)
     self.atrbase = Signal(16)
+    self.chrbase = Signal(16)
+    self.vscroll = Signal(5)
+    self.bitmap_mode = Signal(1)
 
     # Video Interface
     ## Outputs
@@ -144,6 +148,9 @@ def create_shifter_interface(self, platform=None):
 
     # Video Fetch Engine Interface
     self.atrptr = Signal(16)
+    self.chrptr = Signal(16)
+    self.ra = Signal(5)
+    self.go_ldptr = Signal(1)
 
     # Strip Buffer Interface
     ## Inputs
@@ -174,6 +181,9 @@ def create_shifter_interface(self, platform=None):
         self.fv_sbsm_column2 = Signal(1)
         self.fv_sbsm_column3 = Signal(1)
         self.fv_pixctr = Signal(3)
+        self.fv_lastrow = Signal(1)
+        self.fv_bump_atrptr = Signal(1)
+        self.fv_bump_chrptr = Signal(1)
 
 
 def create_blockram_arbiter_interface(self, platform=None, asize=14):
@@ -373,6 +383,7 @@ def create_regset8bit_interface(self, platform=''):
     self.fgpen = Signal(4)
     self.bgpen = Signal(4)
     self.atrbase = Signal(16)
+    self.tallfont = Signal(1)
 
     # Memory Port Engine/DMA Engine Interface
     ## Inputs
