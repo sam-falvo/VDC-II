@@ -71,6 +71,7 @@ class RegSet8BitFormal(Elaboratable):
             self.fgpen.eq(dut.fgpen),
             self.bgpen.eq(dut.bgpen),
             self.atrbase.eq(dut.atrbase),
+            self.chrbase.eq(dut.chrbase),
             self.tallfont.eq(dut.tallfont),
             self.fontbase.eq(dut.fontbase),
 
@@ -129,6 +130,12 @@ class RegSet8BitFormal(Elaboratable):
 
         with m.If(self.adr_i == 9):
             comb += Assert(self.dat_o == Cat(self.vct, Const(-1, 3)))
+
+        with m.If(self.adr_i == 12):
+            comb += Assert(self.dat_o == self.chrbase[8:16])
+
+        with m.If(self.adr_i == 13):
+            comb += Assert(self.dat_o == self.chrbase[0:8])
 
         with m.If(self.adr_i == 18):
             comb += Assert(self.dat_o == self.update_location[8:16])

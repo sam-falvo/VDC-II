@@ -144,16 +144,18 @@ class Shifter(Elaboratable):
         with m.FSM() as sbsm:
             with m.State("WaitHS"):
                 with m.If(self.hs):
+                    m.next = "WaitHSnot"
+
+            with m.State("WaitHSnot"):
+                with m.If(~self.hs):
                     m.next = "WaitVDEN"
 
             with m.State("WaitVDEN"):
                 with m.If(~self.hs):
                     with m.If(self.vden):
                         m.next = "Prefetch"
-                        comb += [
-                            self.go_prefetch.eq(1),
-                            self.go_ldptr.eq(1),
-                        ]
+                        comb += self.go_prefetch.eq(1)
+                        comb += self.go_ldptr.eq(1)
                     with m.Else():
                         m.next = "WaitHS"
 
@@ -228,6 +230,7 @@ class Shifter(Elaboratable):
             if platform == 'formal':
                 comb += [
                     self.fv_sbsm_wait_hs.eq(sbsm.ongoing("WaitHS")),
+                    self.fv_sbsm_wait_hs_not.eq(sbsm.ongoing("WaitHSnot")),
                     self.fv_sbsm_wait_vden.eq(sbsm.ongoing("WaitVDEN")),
                     self.fv_sbsm_prefetch.eq(sbsm.ongoing("Prefetch")),
                     self.fv_sbsm_wait_den.eq(sbsm.ongoing("WaitDEN")),

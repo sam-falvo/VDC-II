@@ -192,6 +192,9 @@ class VDC2(Elaboratable):
             shifter.attr_enable.eq(regset.attr_enable),
             shifter.blink_rate.eq(regset.blink_rate),
             shifter.reverse_screen.eq(regset.reverse_screen),
+            shifter.bitmap_mode.eq(regset.bitmap_mode),
+            shifter.atrbase.eq(regset.atrbase),
+            shifter.chrbase.eq(regset.chrbase),
 
             shifter.attr_pen.eq(stripbuf.sh_pair[8:12]),
             shifter.attr_blink.eq(stripbuf.sh_pair[12]),
@@ -201,7 +204,7 @@ class VDC2(Elaboratable):
             stripbuf.sh_padr.eq(shifter.padr),
             stripbuf.swap.eq(shifter.swap_strip),
 
-            shifter.done_prefetch.eq(1),
+            shifter.done_prefetch.eq(vfe.done_o),
 
             #self.r.eq(stripbuf.sh_pair[3]),
             #self.g.eq(stripbuf.sh_pair[2]),

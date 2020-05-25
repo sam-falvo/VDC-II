@@ -51,6 +51,7 @@ class ShifterFormal(Elaboratable):
             self.fv_chrgate.eq(dut.fv_chrgate),
             self.fv_dot.eq(dut.fv_dot),
             self.fv_sbsm_wait_hs.eq(dut.fv_sbsm_wait_hs),
+            self.fv_sbsm_wait_hs_not.eq(dut.fv_sbsm_wait_hs_not),
             self.fv_sbsm_wait_vden.eq(dut.fv_sbsm_wait_vden),
             self.fv_sbsm_prefetch.eq(dut.fv_sbsm_prefetch),
             self.fv_sbsm_wait_den.eq(dut.fv_sbsm_wait_den),
@@ -266,7 +267,13 @@ class ShifterFormal(Elaboratable):
                 with m.If(~Past(self.hs)):
                     sync += Assert(self.fv_sbsm_wait_hs)
                 with m.Else():
+                    sync += Assert(self.fv_sbsm_wait_hs_not)
+
+            with m.If(Past(self.fv_sbsm_wait_hs_not)):
+                with m.If(~Past(self.hs)):
                     sync += Assert(self.fv_sbsm_wait_vden)
+                with m.Else():
+                    sync += Assert(self.fv_sbsm_wait_hs_not)
 
             with m.If(Past(self.fv_sbsm_wait_vden)):
                 with m.If(Past(self.hs)):
@@ -275,8 +282,8 @@ class ShifterFormal(Elaboratable):
                     with m.If(Past(self.vden)):
                         sync += Assert(self.fv_sbsm_prefetch)
                         comb += [
-                            Assert(Past(self.go_prefetch)),
                             Assert(Past(self.go_ldptr)),
+                            Assert(Past(self.go_prefetch)),
                         ]
                     with m.Else():
                         sync += Assert(self.fv_sbsm_wait_hs)

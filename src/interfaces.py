@@ -55,6 +55,9 @@ def create_video_fetch_interface(self, platform=None):
     self.ldptr = Signal(1)
     self.ra = Signal(5)
 
+    ## Outputs
+    self.done_o = Signal(1)
+
     # Register Set Interface
     ## Inputs
     self.attr_enable = Signal(1)
@@ -172,6 +175,7 @@ def create_shifter_interface(self, platform=None):
         self.fv_chrgate = Signal(1)
         self.fv_dot = Signal(1)
         self.fv_sbsm_wait_hs = Signal(1)
+        self.fv_sbsm_wait_hs_not = Signal(1)
         self.fv_sbsm_wait_vden = Signal(1)
         self.fv_sbsm_prefetch = Signal(1)
         self.fv_sbsm_wait_den = Signal(1)
@@ -383,6 +387,7 @@ def create_regset8bit_interface(self, platform=''):
     self.fgpen = Signal(4)
     self.bgpen = Signal(4)
     self.atrbase = Signal(16)
+    self.chrbase = Signal(16)
     self.tallfont = Signal(1)
     self.fontbase = Signal(3)
 

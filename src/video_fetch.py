@@ -112,7 +112,10 @@ class VideoFetch(Elaboratable):
             comb += fontptr.eq(Cat(self.ra[0:4], self.charcode, self.fontbase[0:3]))
 
         with m.FSM() as ag:
-            comb += ag_idle.eq(ag.ongoing("idle"))
+            comb += [
+                ag_idle.eq(ag.ongoing("idle")),
+                self.done_o.eq(ag_idle),
+            ]
             with m.State("idle"):
                 with m.If(self.go_i & safe_to_go):
                     sync += r_bitmap_mode.eq(self.bitmap_mode)
