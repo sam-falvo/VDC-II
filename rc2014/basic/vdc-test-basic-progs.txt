@@ -1,0 +1,507 @@
+;; This buffer is for text that is not saved, and for Lisp evaluation.
+;; To create a file, visit it with C-x C-f and enter text in its buffer.
+
+10 DATA 10
+200 DATA 0,99
+
+201 DATA 1,80
+202 DATA 2,82
+
+203 DATA 3,&h2C
+204 DATA 4,31
+
+205 DATA 5,13
+206 DATA 6,30
+
+207 DATA 7,31
+209 DATA 9,15
+
+222 DATA 22,&h78
+1000 READ N
+
+1100 FOR I=1 TO N
+1200 PRINT I
+
+1300 READ R,V
+1400 OUT &H6E,R
+
+1500 OUT &H6F,V
+1600 NEXT I
+
+;; This program listing is to perform a crude memory test
+;; on the VDC's video memory.  This program checks to make
+;; sure that the VDC is capable of randomly reading data
+;; from memory without the MPE's block-operations.
+
+10 PRINT "INITIALIZING"
+20 FOR I=0 TO 16383
+
+29 GOSUB 1100
+40 OUT 110,31
+
+50 OUT 111,I AND 255
+60 GOSUB 1000
+
+70 NEXT I
+
+
+200 PRINT "TESTING"
+210 RANDOMIZE
+
+220 FOR J=0 TO 16384
+230 I=INT(RND*16384)
+
+240 GOSUB 1100
+250 OUT 110,31
+
+260 K=INP(111)
+270 PRINT J,I,I AND 255,K
+
+280 NEXT J
+999 END
+
+
+1000 ZZ=INP(110):IF (ZZ AND 128)=0 THEN 1000
+1010 RETURN
+
+
+1100 OUT 110,18
+1110 OUT 111,INT(I/256)
+
+1120 GOSUB 1000
+1130 OUT 110,19
+
+1140 OUT 111,I AND 255
+1150 GOSUB 1000
+
+1160 RETURN
+
+
+
+;; Extension to the above listing which tests block-write functionality.
+;; Run with RUN 2000 or some such.
+
+
+2000 out 110,24
+2010 gosub 1000
+
+2020 out 111,0
+2030 gosub 1000
+
+2040 for j=0 to &h3F
+2050 out 110,18
+
+2060 gosub 1000
+2070 out 111,j
+
+2080 gosub 1000
+2090 out 110,19
+
+2100 gosub 1000
+2110 out 111,0
+
+2120 gosub 1000
+2130 out 110,31
+
+2140 gosub 1000
+2150 out 111,j
+
+2160 gosub 1000
+2170 out 110,30
+
+2180 gosub 1000
+2190 out 111,255
+
+2200 gosub 1000
+2210 next j
+
+2220 goto 200
+270 PRINT J,I,INT(I/256),K
+
+230 i=j
+
+;; HUH...it looks like if I have too many GOSUB 1000s in the code, the block write functionality corrupts video memory in weird ways.  But, if I only have GOSUB 1000s *between* address/data OUTs, it works great!
+;; I don't understand why this should be so.  Reading the status register should never affect the operation of the DMA engine.
+;; This is a hardware bug which breakds VDC backward compatibility.
+
+
+
+
+
+;;  The code below exercises block copy.
+
+3000 gosub 1000
+3010 out 110,24
+
+3020 out 111,128
+3100 for i=&h3C00 to &h3FFF
+
+3110 gosub 1000
+3120 gosub 1100
+
+3130 out 110,31
+3140 out 111,i and 255
+
+3150 next i
+
+3200 gosub 1000
+3210 out 110,18
+
+3220 out 111,0
+3230 gosub 1000
+
+3240 out 110,19
+3250 out 111,0
+
+3260 gosub 1000
+3270 out 110,32
+
+3280 out 111,&h3C
+3290 gosub 1000
+
+3300 out 110,33
+3310 out 111,0
+
+3320 gosub 1000
+3330 out 110,30
+
+3340 out 111,255
+3400 goto 200
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; The code below is intended to be a file transfer program.
+;; A very, very, very slow file transfer program.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+10 PRINT "RECV"
+20 PRINT
+30 PRINT "PROMPT IS ?"
+40 PRINT "Ofilename.ext OPEN"
+50 PRINT "C             CLOSE"
+60 PRINT "Z...          CODE"
+70 PRINT "Q             QUIT"
+80 PRINT "?             HELP"
+90 PRINT
+100 INPUT O$
+110 C$=LEFT$(O$,1)
+120 IF C$="O" THEN GOTO 1000
+130 IF C$="C" THEN GOTO 1100
+140 IF C$="Z" THEN GOTO 1200
+150 IF C$="Q" THEN END
+160 IF C$="?" THEN GOTO 20
+170 PRINT "!?"
+180 GOTO 100
+
+1000 OPEN "O",1,MID$(O$,2)
+1010 GOTO 100
+
+1100 CLOSE 1
+1110 GOTO 100
+
+1200 P$=MID$(O$,2)
+1210 IF LEN(P$)>16 THEN 1250
+1220 PRINT "!L"
+1230 GOTO 100
+1250 S=0:I=0
+1260 H=ASC(MID$(P$,I,1))-64
+1265 S=S+H
+1270 L=ASC(MID$(P$,I+1,1))-64
+1275 S=S+L
+1280 B=H*16+L
+1290 PRINT#1,CHR$(B);
+1300 I=I+2
+1310 IF I<17 THEN 1260
+1320 S=S AND 15
+1330 CK=ASC(MID$(P$,I,1))-64
+1340 IF CK=S THEN 100
+1350 PRINT "!C"
+1360 GOTO 100
+
+
+;; Example input.  Transmit one line, then wait for ? response.
+;; If ! received (or any other character), report error condition and immediately abort transmission.
+
+OTEST.BIN
+Z@@@A@B@C@D@E@F@GL
+Z@H@I@J@K@L@M@N@OL
+ZA@AAABACADAEAFAGD
+ZAHAIAJAKALAMANAOD
+C
+Q
+
+
+;;
+;; Corresponding transmitter program that runs on Linux (under minicom).
+;;
+
+
+
+#include <stdio.h>
+#include <string.h>
+#include <inttypes.h>
+
+#include <unistd.h>
+#include <termios.h>
+
+static void
+error_happened(char *msg) {
+	fprintf(stderr, "Error: %s\n", msg);
+}
+
+
+static void
+send(FILE *fp) {
+	uint8_t buffer[9];
+	int checksum, i, h, l, done, size, prompt;
+
+	while(!feof(fp)) {
+		memset(buffer, 0, 9);
+		size = fread(buffer, 1, 8, fp);
+		if(size == 0) {
+			if(feof(fp)) break;
+			error_happened("file read");
+			return;
+		} else {
+			checksum = 0;
+
+			/* Ask receiver to record 8 bytes */
+
+			printf("Z");
+			for(i = 0; i < 8; i++) {
+				h = (buffer[i] & 0xF0) >> 4;
+				l = (buffer[i] & 0x0F);
+				checksum += h+l;
+				printf("%c", '@'+h);
+				printf("%c", '@'+l);
+			}
+			printf("%c\r\n", '@'+(checksum & 15));
+			fflush(stdout);
+
+			/* Wait for the ? response. */
+
+			prompt = fgetc(stdin);
+			if(prompt != '?') {
+				error_happened("'? ' expected");
+				return;
+			}
+
+			prompt = fgetc(stdin);
+			if(prompt != ' ') {
+				error_happened("'? ' expected");
+				return;
+			}
+		}
+	}
+
+	/* Ask receiver to close currently open file. */
+
+	printf("C\r\n");
+	fflush(stdout);
+}
+
+
+int
+main(int argc, char *argv[]) {
+	FILE *fp = NULL;
+	struct termios ttysave, ttynonblock;
+
+	// I have no idea if we need this code when run
+	// from minicom; it might configure the stdin stream
+	// for us.
+
+	tcgetattr(STDIN_FILENO, &ttysave);
+	ttynonblock = ttysave;
+	ttynonblock.c_lflag &= ~(ICANON | ECHO);
+	ttynonblock.c_cc[VMIN] = 1;
+	tcsetattr(STDIN_FILENO, TCSANOW, &ttynonblock);
+
+	fp = fopen(argv[1], "rb");
+	if(fp) {
+		send(fp);
+		fclose(fp);
+	}
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &ttysave);
+}
+
+
+
+
+
+;; This program is to exercise horizontal smooth scrolling
+;; First, we set 128x30 video mode, with 4 pixel wide glyphs
+;; and 1 pixel inter-character gap.
+
+
+10 DATA 12
+200 DATA 0,159
+
+201 DATA 1,128
+202 DATA 2,131
+
+203 DATA 3,&h2F
+204 DATA 4,31
+
+205 DATA 5,13
+206 DATA 6,30
+
+207 DATA 7,31
+209 DATA 9,15
+
+222 DATA 22,&h43
+225 DATA 25,&h04
+
+226 DATA 26,&h93
+1000 READ N
+
+1100 FOR I=1 TO N
+1200 PRINT I
+
+1300 READ R,V
+1400 OUT &H6E,R
+
+1500 OUT &H6F,V
+1600 NEXT I
+
+2000 DATA &h43,&h04
+2001 DATA &h42,&h03
+
+2002 DATA &h41,&h02
+2003 DATA &h40,&h01
+
+2004 DATA &h44,&h00
+2010 RESTORE 2000
+
+2020 FOR I=1 TO 5
+2030 READ X,Y
+
+2040 OUT &h6E,22
+2050 OUT &h6F,X
+
+2060 OUT &h6E,25
+2070 OUT &h6F,Y
+
+2080 NEXT I
+2090 X=INP(&h6E)
+
+2100 IF (X AND 32)=0 THEN 2090
+2110 GOTO 2010
+
+
+
+
+;; This program is a quick and dirty demo for monochrome bitmapped mode.
+
+
+10 DATA 19
+200 DATA 0,99
+
+201 DATA 1,80
+202 DATA 2,82
+
+203 DATA 3,&h2C
+204 DATA 4,31
+
+205 DATA 5,13
+206 DATA 6,30
+
+207 DATA 7,31
+209 DATA 9,15
+
+212 DATA 12,0
+213 DATA 13,0
+
+220 DATA 20,&h20
+221 DATA 21,&h00
+
+222 DATA 22,&h78
+223 DATA 23,&h0F
+
+224 DATA 24,0
+225 DATA 25,&h87
+
+226 DATA 26,&hF1
+228 DATA 28,&h20
+
+1000 READ N
+1100 FOR I=1 TO N
+
+1200 PRINT I
+1300 READ R,V
+
+1400 OUT &H6E,R
+1500 OUT &H6F,V
+
+1600 NEXT I
+
+	Draw a 640x200 50% grey stipple
+
+2000 OUT 110,18
+2010 OUT 111,0
+
+2020 GOSUB 3000
+
+2030 OUT 110,19
+2040 OUT 111,0
+
+2050 GOSUB 3000
+
+2060 OUT 110,31
+2070 OUT 111,&hAA
+
+2080 GOSUB 3000
+
+2090 OUT 110,30
+2100 OUT 111,79
+
+2110 GOSUB 3000
+
+2120 OUT 110,31
+2130 OUT 111,&h55
+
+2140 GOSUB 3000
+
+2150 OUT 110,30
+2160 OUT 111,79
+
+2170 GOSUB 3000
+
+2180 OUT 110,18
+2190 OUT 111,0
+
+2200 GOSUB 3000
+
+2210 OUT 110,19
+2220 OUT 111,160
+
+2230 GOSUB 3000
+
+2240 OUT 110,32
+2250 OUT 111,0
+
+2260 OUT 110,33
+2270 OUT 111,0
+
+2280 OUT 110,24
+2290 OUT 111,INP(111) OR 128
+
+2300 FOR Y=1 TO 49
+2310 OUT 110,30
+
+2320 OUT 111,160
+2330 GOSUB 3000
+
+2340 NEXT Y
+2999 END
+
+3000 IF INP(110) AND 128 = 0 THEN 3000
+3010 RETURN
+
