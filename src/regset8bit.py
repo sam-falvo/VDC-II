@@ -79,6 +79,7 @@ class RegSet8Bit(Elaboratable):
             self.hcd.eq(hcd_reg),
             self.hsync_xor.eq(hsync_xor_reg),
             self.vsync_xor.eq(vsync_xor_reg),
+            self.tallfont.eq(vct_reg[4]),
         ]
 
         # Handle read data routing
@@ -91,8 +92,12 @@ class RegSet8Bit(Elaboratable):
             6: self.vd,
             7: self.vsp,
             9: Cat(self.vct, Const(-1, 8-len(self.vct))),
+            12: self.chrbase[8:16],
+            13: self.chrbase[0:8],
             18: self.update_location[8:16],
             19: self.update_location[0:8],
+            20: self.atrbase[8:16],
+            21: self.atrbase[0:8],
             22: Cat(self.hcd, self.hct),
             24: Cat(
                 self.vscroll,
@@ -100,6 +105,15 @@ class RegSet8Bit(Elaboratable):
                 self.reverse_screen,
                 self.block_copy
             ),
+            25: Cat(
+                self.hscroll,
+                self.dotclock_select,
+                self.semigraphic_mode,
+                self.attr_enable,
+                self.bitmap_mode,
+            ),
+            26: Cat(self.bgpen, self.fgpen),
+            28: Cat(Const(-1, 5), self.fontbase),
             30: self.bytecnt,
             31: self.cpudatar,
             32: self.copysrc[8:16],
@@ -158,10 +172,18 @@ class RegSet8Bit(Elaboratable):
                 sync += vsp_reg.eq(self.dat_i)
             with m.Elif(self.adr_i == 9):
                 sync += vct_reg.eq(self.dat_i[0:len(vct_reg)])
+            with m.Elif(self.adr_i == 12):
+                sync += self.chrbase[8:16].eq(self.dat_i)
+            with m.Elif(self.adr_i == 13):
+                sync += self.chrbase[0:8].eq(self.dat_i)
             with m.Elif((self.adr_i == 18) & ~incr_updloc):
                 sync += self.update_location[8:16].eq(self.dat_i)
             with m.Elif((self.adr_i == 19) & ~incr_updloc):
                 sync += self.update_location[0:8].eq(self.dat_i)
+            with m.Elif(self.adr_i == 20):
+                sync += self.atrbase[8:16].eq(self.dat_i)
+            with m.Elif(self.adr_i == 21):
+                sync += self.atrbase[0:8].eq(self.dat_i)
             with m.Elif(self.adr_i == 22):
                 sync += [
                     hct_reg.eq(self.dat_i[4:8]),
@@ -174,6 +196,21 @@ class RegSet8Bit(Elaboratable):
                     self.reverse_screen.eq(self.dat_i[6]),
                     self.block_copy.eq(self.dat_i[7]),
                 ]
+            with m.Elif(self.adr_i == 25):
+                sync += [
+                    self.hscroll.eq(self.dat_i[0:len(self.hscroll)]),
+                    self.dotclock_select.eq(self.dat_i[4]),
+                    self.semigraphic_mode.eq(self.dat_i[5]),
+                    self.attr_enable.eq(self.dat_i[6]),
+                    self.bitmap_mode.eq(self.dat_i[7]),
+                ]
+            with m.Elif(self.adr_i == 26):
+                sync += [
+                    self.bgpen.eq(self.dat_i[0:4]),
+                    self.fgpen.eq(self.dat_i[4:8]),
+                ]
+            with m.Elif(self.adr_i == 28):
+                sync += self.fontbase.eq(self.dat_i[5:8])
             with m.Elif((self.adr_i == 30) & ~self.decr_bytecnt):
                 sync += self.bytecnt.eq(self.dat_i)
             with m.Elif(self.adr_i == 31):

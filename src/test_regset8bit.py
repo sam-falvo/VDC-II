@@ -63,6 +63,17 @@ class RegSet8BitFormal(Elaboratable):
             self.blink_rate.eq(dut.blink_rate),
             self.reverse_screen.eq(dut.reverse_screen),
             self.block_copy.eq(dut.block_copy),
+            self.bitmap_mode.eq(dut.bitmap_mode),
+            self.attr_enable.eq(dut.attr_enable),
+            self.semigraphic_mode.eq(dut.semigraphic_mode),
+            self.dotclock_select.eq(dut.dotclock_select),
+            self.hscroll.eq(dut.hscroll),
+            self.fgpen.eq(dut.fgpen),
+            self.bgpen.eq(dut.bgpen),
+            self.atrbase.eq(dut.atrbase),
+            self.chrbase.eq(dut.chrbase),
+            self.tallfont.eq(dut.tallfont),
+            self.fontbase.eq(dut.fontbase),
 
             self.dat_o.eq(dut.dat_o),
 
@@ -120,6 +131,12 @@ class RegSet8BitFormal(Elaboratable):
         with m.If(self.adr_i == 9):
             comb += Assert(self.dat_o == Cat(self.vct, Const(-1, 3)))
 
+        with m.If(self.adr_i == 12):
+            comb += Assert(self.dat_o == self.chrbase[8:16])
+
+        with m.If(self.adr_i == 13):
+            comb += Assert(self.dat_o == self.chrbase[0:8])
+
         with m.If(self.adr_i == 18):
             comb += Assert(self.dat_o == self.update_location[8:16])
             with m.If(self.we_i):
@@ -134,6 +151,12 @@ class RegSet8BitFormal(Elaboratable):
             with m.Else():
                 comb += Assert(~self.go_wr_updloc)
 
+        with m.If(self.adr_i == 20):
+            comb += Assert(self.dat_o == self.atrbase[8:16])
+
+        with m.If(self.adr_i == 21):
+            comb += Assert(self.dat_o == self.atrbase[0:8])
+
         with m.If(self.adr_i == 22):
             comb += Assert(self.dat_o == Cat(self.hcd, self.hct))
 
@@ -144,6 +167,24 @@ class RegSet8BitFormal(Elaboratable):
                 self.reverse_screen,
                 self.block_copy,
             ))
+
+        with m.If(self.adr_i == 25):
+            comb += Assert(self.dat_o == Cat(
+                self.hscroll,
+                self.dotclock_select,
+                self.semigraphic_mode,
+                self.attr_enable,
+                self.bitmap_mode,
+            ))
+
+        with m.If(self.adr_i == 26):
+            comb += Assert(self.dat_o == Cat(
+                self.bgpen,
+                self.fgpen,
+            ))
+
+        with m.If(self.adr_i == 28):
+            comb += Assert(self.dat_o[5:8] == self.fontbase)
 
         with m.If(self.adr_i == 30):
             comb += Assert(self.dat_o == self.bytecnt)
@@ -196,6 +237,12 @@ class RegSet8BitFormal(Elaboratable):
         # The MPE is responsible for not underflowing the counter.
         with m.If(past_valid & Past(self.decr_bytecnt)):
             sync += Assert(self.bytecnt == (Past(self.bytecnt) - 1)[0:8])
+
+        # Font glyphs can be 16 bytes of 32 bytes tall, depending on the
+        # setting of R9[0:5].  tallfont is asserted if the glyphs are
+        # taken to be 32 bytes tall.
+        with m.If(self.vct[4]):
+            comb += Assert(self.tallfont)
 
         return m
 

@@ -14,6 +14,222 @@ REG_WIDTH=8
 MAX_PIXELS_PER_CHAR=8
 
 
+def create_strip_buffer_interface(self, platform=None):
+    # Video Fetch Engine Interface
+    ## Inputs
+    self.padr = Signal(2)
+    self.cwe = Signal(1)
+    self.awe = Signal(1)
+    self.wadr = Signal(2)
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.pair = Signal(16)
+
+    # Shifter Interface
+    ## Inputs
+    self.sh_padr = Signal(2)
+    self.swap = Signal(1)
+
+    ## Outputs
+    self.sh_pair = Signal(16)
+
+    if platform == 'formal':
+        self.fv_col0a = Signal(16)
+        self.fv_col1a = Signal(16)
+        self.fv_col2a = Signal(16)
+        self.fv_col3a = Signal(16)
+        self.fv_col0b = Signal(16)
+        self.fv_col1b = Signal(16)
+        self.fv_col2b = Signal(16)
+        self.fv_col3b = Signal(16)
+        self.fv_ab = Signal(1)
+
+
+def create_video_fetch_interface(self, platform=None):
+    # Video Timing Interface
+    ## Inputs
+    self.atrptr = Signal(16)
+    self.chrptr = Signal(len(self.atrptr))
+    self.go_i = Signal(1)
+    self.ldptr = Signal(1)
+    self.ra = Signal(5)
+
+    ## Outputs
+    self.done_o = Signal(1)
+
+    # Register Set Interface
+    ## Inputs
+    self.attr_enable = Signal(1)
+    self.bitmap_mode = Signal(1)
+    self.fontbase = Signal(3)
+    self.tallfont = Signal(1)
+
+    ## Outputs
+
+    # Video Memory Interface
+    ## Inputs
+    self.ack_i = Signal(1)
+    self.stall_i = Signal(1)
+
+    ## Outputs
+    self.adr_o = Signal(len(self.atrptr))
+    self.cyc_o = Signal(1)
+    self.stb_o = Signal(1)
+
+    # Strip Buffer Interface
+    ## Inputs
+    self.charcode = Signal(9)
+
+    ## Outputs
+    self.awe = Signal(1)
+    self.cwe = Signal(1)
+    self.padr = Signal(2)
+    self.wadr = Signal(2)
+
+    if platform == 'formal':
+        self.fv_ag_a1 = Signal(1)
+        self.fv_ag_a2 = Signal(1)
+        self.fv_ag_a3 = Signal(1)
+        self.fv_ag_a4 = Signal(1)
+        self.fv_ag_c1 = Signal(1)
+        self.fv_ag_c2 = Signal(1)
+        self.fv_ag_c3 = Signal(1)
+        self.fv_ag_c4 = Signal(1)
+        self.fv_ag_f1 = Signal(1)
+        self.fv_ag_f2 = Signal(1)
+        self.fv_ag_f3 = Signal(1)
+        self.fv_ag_f4 = Signal(1)
+        self.fv_ag_go_font = Signal(1)
+        self.fv_ag_idle = Signal(1)
+        self.fv_atrptr = Signal(len(self.adr_o))
+        self.fv_chrptr = Signal(len(self.adr_o))
+        self.fv_dr_idle = Signal(1)
+        self.fv_dr_a1 = Signal(1)
+        self.fv_dr_a2 = Signal(1)
+        self.fv_dr_a3 = Signal(1)
+        self.fv_dr_a4 = Signal(1)
+        self.fv_dr_c1 = Signal(1)
+        self.fv_dr_c2 = Signal(1)
+        self.fv_dr_c3 = Signal(1)
+        self.fv_dr_c4 = Signal(1)
+        self.fv_dr_f1 = Signal(1)
+        self.fv_dr_f2 = Signal(1)
+        self.fv_dr_f3 = Signal(1)
+        self.fv_dr_f4 = Signal(1)
+        self.fv_bitmap_mode = Signal(1)
+
+
+def create_shifter_interface(self, platform=None):
+    # CRTC Interface
+    ## Inputs
+    self.hclken = Signal(1)
+    self.den = Signal(1)
+    self.hs = Signal(1)
+    self.vs = Signal(1)
+    self.vden = Signal(1)
+
+    # Register Set Interface
+    ## Inputs
+    self.hscroll = Signal(4)
+    self.hcd = Signal(4)
+    self.hct = Signal(4)
+    self.vct = Signal(5)
+    self.fgpen = Signal(4)
+    self.bgpen = Signal(4)
+    self.attr_enable = Signal(1)
+    self.blink_rate = Signal(1)
+    self.reverse_screen = Signal(1)
+    self.atrbase = Signal(16)
+    self.chrbase = Signal(16)
+    self.vscroll = Signal(5)
+    self.bitmap_mode = Signal(1)
+
+    # Video Interface
+    ## Outputs
+    self.outpen = Signal(4)
+
+    # Video Fetch Engine Interface
+    self.atrptr = Signal(16)
+    self.chrptr = Signal(16)
+    self.ra = Signal(5)
+    self.go_ldptr = Signal(1)
+
+    # Strip Buffer Interface
+    ## Inputs
+    self.attr_pen = Signal(4)
+    self.attr_rvs = Signal(1)
+    #self.attr_underline = Signal(1)
+    self.attr_blink = Signal(1)
+    self.char_bm = Signal(8)
+    self.done_prefetch = Signal(1)
+
+    ## Outputs
+    self.go_prefetch = Signal(1)
+    self.swap_strip = Signal(1)
+    self.padr = Signal(2)
+
+    if platform == 'formal':
+        self.fv_reveal_ctr = Signal(4)
+        self.fv_conceal_ctr = Signal(4)
+        self.fv_chrgate = Signal(1)
+        self.fv_dot = Signal(1)
+        self.fv_sbsm_wait_hs = Signal(1)
+        self.fv_sbsm_wait_hs_not = Signal(1)
+        self.fv_sbsm_wait_vden = Signal(1)
+        self.fv_sbsm_prefetch = Signal(1)
+        self.fv_sbsm_wait_den = Signal(1)
+        self.fv_lpic = Signal(1)
+        self.fv_sbsm_column0 = Signal(1)
+        self.fv_sbsm_column1 = Signal(1)
+        self.fv_sbsm_column2 = Signal(1)
+        self.fv_sbsm_column3 = Signal(1)
+        self.fv_pixctr = Signal(3)
+        self.fv_lastrow = Signal(1)
+        self.fv_bump_atrptr = Signal(1)
+        self.fv_bump_chrptr = Signal(1)
+
+
+def create_blockram_arbiter_interface(self, platform=None, asize=14):
+    # VFE Memory Interface
+    ## Inputs
+    self.vfe_adr_i = Signal(asize)
+    self.vfe_cyc_i = Signal(1)
+    self.vfe_dat_i = Signal(8)
+    self.vfe_stb_i = Signal(1)
+    self.vfe_we_i = Signal(1)
+
+    ## Outputs
+    self.vfe_ack_o = Signal(1)
+    self.vfe_dat_o = Signal(8)
+    self.vfe_stall_o = Signal(1)
+
+    # MPE Memory Interface
+    ## Inputs
+    self.mpe_adr_i = Signal(asize)
+    self.mpe_cyc_i = Signal(1)
+    self.mpe_dat_i = Signal(8)
+    self.mpe_stb_i = Signal(1)
+    self.mpe_we_i = Signal(1)
+
+    ## Outputs
+    self.mpe_ack_o = Signal(1)
+    self.mpe_dat_o = Signal(8)
+    self.mpe_stall_o = Signal(1)
+
+    # Block RAM Interface
+    ## Inputs
+    self.dat_i = Signal(8)
+
+    ## Outputs
+    self.adr_o = Signal(asize)
+    self.dat_o = Signal(8)
+    self.we_o = Signal(1)
+
+    if platform == 'formal':
+        pass
+
+
 def create_mpe_interface(self, platform='', abus_width=14):
     # Register-File Interface
     ## Outputs
@@ -163,6 +379,17 @@ def create_regset8bit_interface(self, platform=''):
     self.blink_rate = Signal(1)
     self.reverse_screen = Signal(1)
     self.block_copy = Signal(1)
+    self.bitmap_mode = Signal(1)
+    self.attr_enable = Signal(1)
+    self.semigraphic_mode = Signal(1)
+    self.dotclock_select = Signal(1)
+    self.hscroll = Signal(4)
+    self.fgpen = Signal(4)
+    self.bgpen = Signal(4)
+    self.atrbase = Signal(16)
+    self.chrbase = Signal(16)
+    self.tallfont = Signal(1)
+    self.fontbase = Signal(3)
 
     # Memory Port Engine/DMA Engine Interface
     ## Inputs
