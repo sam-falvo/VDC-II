@@ -98,7 +98,7 @@ AppInitialize:
 	ld	(s0),a
 	ld	(s1),a
 
-	ld	hl,ClockVSYNCHandler
+	ld	hl,0
 	ld	(vdcVSHandler),hl
 
 	; Draw clock
@@ -128,6 +128,12 @@ ClockKbdHandler:
 	cp	'Q'
 	jr	z,doQuit
 
+	cp	'p'
+	jr	z,TogglePause
+
+	cp	'P'
+	jr	z,TogglePause
+
 	push	af
 	ld	de,keyPressedMsg
 	call	BdosPrintString
@@ -143,6 +149,22 @@ ClockKbdHandler:
 keyPressedMsg:
 	defm	"You just pressed this key: $"
 crMsg:	defm	"   ",13,"$"
+
+
+TogglePause:
+	ld	a,(paused)
+	xor	a,PAUSED_FLAG
+	ld	(paused),a
+	jr	z,notpaused
+
+	ld	hl,0
+	ld	(vdcVSHandler),hl
+	jp	_RedrawPaused
+
+notpaused:
+	ld	hl,ClockVSYNCHandler
+	ld	(vdcVSHandler),hl
+	jp	_RedrawPaused
 
 
 ; Approximately 60 times a second, this procedure should be called by the UE event loop.
@@ -540,8 +562,7 @@ _DrawG:
 	defw	0
 .digitT
 	defw	0
-.paused
-	defb	0
+.paused defb	0
 .h0	defb	0
 .m0	defb	0
 .s0	defb	0
