@@ -49,3 +49,13 @@ LogNL:	push	af
 	pop	af
 	ret
 
+LogChar:
+	push	af
+	push	bc
+	push	hl
+	call	BdosConsoleOut
+	pop	hl
+	pop	bc
+	pop	af
+	ret
+

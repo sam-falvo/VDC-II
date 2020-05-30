@@ -348,6 +348,7 @@ VdcVsyncCheck:
 	ld	bc,(vdcPort)
 	in	a,(c)
 	and	a,20h			; Isolate current VSYNC flag.
+	ld	c,a
 	xor	a,20h			; Set only if flag is 0
 	ld	b,a
 	ld	a,(vdcVSFlag)
@@ -357,7 +358,7 @@ VdcVsyncCheck:
 	; If we're here, we know that VSYNC transitioned from 1 to 0.  Record the VSYNC flag for
 	; later use and invoke the handler.
 
-	xor	a
+	ld	a,c
 	ld	(vdcVSFlag),a
 	ld	hl,(vdcVSHandler)	; Call VSYNC handler and return.
 	jp	(hl)
@@ -366,7 +367,7 @@ VdcVsyncCheck:
 	; We don't do anything under these circumstances.
 
 .vdcvschk0
-	ld	a,20H
+	ld	a,c
 	ld	(vdcVSFlag),a
 	ret
 

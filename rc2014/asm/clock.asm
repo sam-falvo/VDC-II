@@ -147,11 +147,20 @@ crMsg:	defm	"   ",13,"$"
 
 ; Approximately 60 times a second, this procedure should be called by the UE event loop.
 ; It's triggered off the VGA's vertical sync pulse.
+;
+; Unfortunately, the asynchronous nature of the UE's event loop and probably my lack-luster
+; programming skills means that we miss a lot of VSYNCs in the process.  So, after carefully
+; observing program behavior, it looks like we need to respond after only 16-ish frames that
+; we can actually see, ignoring the remainder that fly by unnoticed.
+;
+; Note that the 16 frames limit is calibrated against *my* RC2014, which uses a Z80 processor
+; running at 7.3728MHz.  If you're running a Z180, Z280, Z380, or Rabbit processor of some
+; kind, you'll need to customize this calibration for your hardware.
 
 ClockVSYNCHandler:
 	ld	a,(frames)
 	inc	a
-	cp	60
+	cp	17		; In a perfect world, this would be 60.  But, ...
 	jr	z,bumpS0
 	ld	(frames),a
 	ret
