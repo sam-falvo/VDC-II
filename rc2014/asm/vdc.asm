@@ -327,6 +327,50 @@ VdcPrintRawText:
 	djnz	printrawtextloop
 	ret
 
+VdcVsyncCheck:
+; Checks for a VSYNC event and, if it happens, invokes the VSYNC event
+; handler, if any.
+;
+; Inputs:	(vdcPort) refers to the VDC-II core to check.
+;		(vdcVSHandler) points to the current VSYNC handler, if any.
+;		Set to 0 if none.
+; Outputs:
+; Destroys:	AF, BC, HL
+
+	ld	hl,(vdcVSHandler)	; First, check to make sure we even have a handler installed.
+	ld	a,h			; There's no point in doing anything unless we have a handler to
+	or	l			; call in the first place.
+	ret	z
+
+	; Check for the *falling edge* of VSYNC.  That is, when VSYNC goes from 1->0.  We ignore the
+	; 0->1 case.
+
+	ld	bc,(vdcPort)
+	in	a,(c)
+	and	a,20h			; Isolate current VSYNC flag.
+	xor	a,20h			; Set only if flag is 0
+	ld	b,a
+	ld	a,(vdcVSFlag)
+	and	b			; non-zero only if VSYNC flag transitioned from 1->0.
+	jr	z,vdcvschk0
+
+	; If we're here, we know that VSYNC transitioned from 1 to 0.  Record the VSYNC flag for
+	; later use and invoke the handler.
+
+	xor	a
+	ld	(vdcVSFlag),a
+	ld	hl,(vdcVSHandler)	; Call VSYNC handler and return.
+	jp	(hl)
+
+	; If we're here, we know that VSYNC either remained stable or transitioned from 0 to 1.
+	; We don't do anything under these circumstances.
+
+.vdcvschk0
+	ld	a,20H
+	ld	(vdcVSFlag),a
+	ret
+
+
 ;========================================
 ; VDC Data
 
@@ -335,6 +379,12 @@ vdcPort:
 
 vdcFontBase:
 	defb	0		; only bits 7-5 are valid.
+
+vdcVSFlag:
+	defb	0		; only 00h and 20h allowed.
+
+vdcVSHandler:
+	defw	0		; Vertical Sync handler
 
 	defw	0		; padding
 

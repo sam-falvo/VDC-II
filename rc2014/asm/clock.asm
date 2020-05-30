@@ -98,6 +98,9 @@ AppInitialize:
 	ld	(s0),a
 	ld	(s1),a
 
+	ld	hl,ClockVSYNCHandler
+	ld	(vdcVSHandler),hl
+
 	; Draw clock
 
 	call	_RedrawPaused
@@ -140,6 +143,91 @@ ClockKbdHandler:
 keyPressedMsg:
 	defm	"You just pressed this key: $"
 crMsg:	defm	"   ",13,"$"
+
+
+; Approximately 60 times a second, this procedure should be called by the UE event loop.
+; It's triggered off the VGA's vertical sync pulse.
+
+ClockVSYNCHandler:
+	ld	a,(frames)
+	inc	a
+	cp	60
+	jr	z,bumpS0
+	ld	(frames),a
+	ret
+
+bumpS0:
+	xor	a
+	ld	(frames),a
+
+	ld	a,(s0)
+	inc	a
+	cp	10
+	jr	z,bumpS1
+	ld	(s0),a
+	jp	_RedrawClock
+
+bumpS1:
+	xor	a
+	ld	(s0),a
+
+	ld	a,(s1)
+	inc	a
+	cp	6
+	jr	z,bumpM0
+	ld	(s1),a
+	jp	_RedrawClock
+
+
+bumpM0:
+	xor	a
+	ld	(s1),a
+
+	ld	a,(m0)
+	inc	a
+	cp	10
+	jr	z,bumpM1
+	ld	(m0),a
+	jp	_RedrawClock
+
+bumpM1:
+	xor	a
+	ld	(m0),a
+
+	ld	a,(m1)
+	inc	a
+	cp	6
+	jr	z,bumpH0
+	ld	(m1),a
+	jp	_RedrawClock
+
+
+bumpH0:
+	xor	a
+	ld	(m1),a
+
+	ld	a,(h0)
+	inc	a
+	cp	10
+	jr	z,bumpH1
+	ld	(h0),a
+	jp	_RedrawClock
+
+bumpH1:
+	xor	a
+	ld	(h0),a
+
+	ld	a,(h1)
+	inc	a
+	cp	10
+	jr	z,rollOver
+	ld	(h1),a
+	jp	_RedrawClock
+
+rollOver:
+	xor	a
+	ld	(h1),a
+	jp	_RedrawClock
 
 
 _RedrawPaused:
@@ -451,4 +539,5 @@ _DrawG:
 .h1	defb	0
 .m1	defb	0
 .s1	defb	0
+.frames	defb	0
 

@@ -16,7 +16,10 @@
 	call	VdcInitialize
 	call	AppInitialize
 
+	; Main/Centralized Event Loop
+
 .again	call	KbdCheck
+	call	VdcVsyncCheck
 	jr	again
 
 
