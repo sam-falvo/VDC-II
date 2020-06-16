@@ -1,0 +1,13 @@
+Title: Block Editor
+
+See also: U006
+
+Main Behavior:
+
+1. User types the command to launch the block editor (e.g., 10 LIST to jump directly to block 10; just EDIT to re-edit the last block).
+2. User sees the cursor appear on line 1 of the specified block.  The user may then edit the block contents, or navigate to other blocks.
+
+Exceptional Behavior:
+
+1a. If no block file is currently set for the indicated block, an error is displayed and control returns to the OK prompt.
+

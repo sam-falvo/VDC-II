@@ -1,0 +1,31 @@
+Title: Command Entry
+
+Note:
+
+The command entry field is not intended for general purpose
+programming or use as a general purpose command-line interface.  It is
+primarily intended, instead, to function as a kind of task switcher.
+
+General purpose programming/automation is intended to happen in the
+block editor and/or other application(s) the user might want to
+activate.
+
+Main Behavior:
+
+1. User types a number of characters.
+2. User sees characters as they're typed, from left to right.
+3. When user presses ENTER, the line of text entered is interpreted, also from left to right.
+4. User sees the OK prompt disappear while interpretation is in progress, and the prompt return when interpretation completes.
+5. The current state of the data stack appears on the stack status line.
+
+Exceptional Behavior:
+
+2a. If the typed character would cause the cursor to go beyond the right margin of the command line, then it is ignored.
+
+2b. If the user types the backspace, the last-entered character is removed and the cursor moved correspondingly to the left.  If no further characters remain to be deleted, then the backspace takes no further action.
+
+2c. (OPTIONAL) CTRL-A points the cursor at the beginning of the text entry.  CTRL-E points the cursor at the very end.  CTRL-F moves the cursor forward (right) one character.  CTRL-B moves the cursor back (left) one character without deleting anything.  CTRL-D deletes the currently highlighted character.  CTRL-H is backspace.  CTRL-K disposes of the text starting at the cursor and extending to the current end of the buffer.  CTRL-U disposes of the entire line, regardless of where the cursor is positioned (it's equivalent to CTRL-A CTRL-K).
+
+3. If an unknown command appears in the input stream, then an error is reported to the user and further interpretation halts.
+
+4. If the user asked VDC-Forth to exit back to CP/M, then OK is not printed.

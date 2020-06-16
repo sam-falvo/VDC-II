@@ -1,0 +1,14 @@
+Title: Launch VDC-Forth
+
+Main Behavior:
+
+1. User types VDCFORTH at CP/M command prompt.
+2. VGA screen synchronizes and clears if it hasn't already.
+3. User sees VDC-Forth banner on the display.
+4. User sees OK prompt along the bottom of the screen.
+5. User sees a text entry cursor.
+6. There is a stack status line (currently empty) below the OK prompt.
+
+Exceptional Behavior:
+
+none.

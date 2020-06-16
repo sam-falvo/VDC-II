@@ -1,0 +1,22 @@
+Title: Block File Configuration
+
+Main Behavior:
+
+1. The user can create a new block file (pre-sized for 1800 blocks) using the CREATE command: S" E:DATAFILE.WRT" 1800 CREATE
+2. The file can then be mapped into block space starting at block 200 using the MAP command: S" E:DATAFILE.WRT" 200 MAP
+3. The user can view the current block file mapping by typing the .MAP command.  The user then sees a table similar to the following:
+
+	...ID  .From  ...To  Mapping
+	    0      0     99  C:VIRTMEM.BLK
+	    1    200   1999  E:DATAFILE.WRT
+
+4. The user can unmap a block file with the UNMAP command (e.g., 200 UNMAP).  The parameter names any valid block belonging to the file you want to unmap.  The entire range is unmapped.
+
+Exceptional Behavior:
+
+1a. If CP/M reports an error during file allocation, interpretation quits with an error message.
+
+2a. If the specified block file does not exist, interpretation quits with an error message.
+
+2b. If the file would overlap another mapping, interpretation quits with an error message.
+

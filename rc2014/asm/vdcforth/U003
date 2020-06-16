@@ -1,0 +1,15 @@
+Title: Application Area
+
+Main Behavior:
+
+1. User types a command that loads and runs an application (e.g., 10 LIST) in the command prompt.
+2. The application draws its user interface in the application area.
+3. The user finds its focus is in the application area (e.g., for the LIST command, the text cursor resides on line 1 of the block).
+4. The user can focus back to the OK prompt via CTRL-Q.  The OK prompt is highlighted, and cursor focuses onto the command line.
+5. The user can focus again back to the block editor via CTRL-Q again.  The OK prompt is subdued, and cursor may refocus to the app again.
+
+Exceptional Behavior:
+
+3a. If no application is loaded then using CTRL-Q to focus into the application will be ignored.
+3b. If the currently running application desires it, then using CTRL-Q to focus into the application will be ignored.
+

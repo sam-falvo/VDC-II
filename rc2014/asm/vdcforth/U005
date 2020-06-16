@@ -1,0 +1,13 @@
+Title: Loading code
+
+Main Behavior:
+
+1. User enters command to load code (e.g., 10 LOAD).
+2. Computer spends the time to interpret the specified block as source text.
+3. After loading completes, the user can observe the data stack contents on the stack status line.
+
+Exceptional Behavior:
+
+2a. If block does not exist, an error is displayed, and returns to the OK prompt.
+2b. If a word named in the block does not exist, an error is displayed indicating the current block number and offset, and further interpretation of the block is aborted.
+
