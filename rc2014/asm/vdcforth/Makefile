@@ -3,6 +3,8 @@ FORTH_DRIVERS=drivers/evtloop/cpm2.asm drivers/osal/cpm2.asm drivers/vdc/c128.as
 FORTH_SRCS=usecase/startup/vdcforth.asm
 TVDC_DRIVERS=drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 testdefs.asm.m4 utils.asm tester.asm
+TCMDLINE_DRIVERS=drivers/osal/cpm2.asm
+TCMDLINE_SRCS=tcmdline.asm testdefs.asm.m4 utils.asm tester.asm usecase/cmdline/tib.asm
 
 
 help:
@@ -15,7 +17,7 @@ help:
 .phony: clean
 clean:
 	rm -f *.o *.err *.com *.bin ${CPMFS}
-	rm -f tvdc.asm
+	rm -f tvdc.asm tcmdline.asm
 
 .phony: run
 run: d71
@@ -23,9 +25,10 @@ run: d71
 
 
 .phony: d71
-d71: ${CPMFS} vdcforth.com tvdc.com
-	yes | ctools ${CPMFS} p vdcforth.com
-	yes | ctools ${CPMFS} p tvdc.com
+d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com
+	yes | ctools ${CPMFS} p vdcforth.com >/dev/null
+	yes | ctools ${CPMFS} p tvdc.com >/dev/null
+	yes | ctools ${CPMFS} p tcmdline.com >/dev/null
 
 
 .phony: ${CPMFS}
@@ -42,3 +45,10 @@ tvdc.com: ${TVDC_DRIVERS} ${TVDC_SRCS}
 	m4 drivers/vdc/tests/tvdc.asm.m4 >tvdc.asm
 	z80asm -b tvdc.asm
 	mv tvdc.bin tvdc.com
+
+
+tcmdline.com: ${TCMDLINE_DRIVERS} ${TCMDLINE_SRCS}
+	m4 tcmdline.asm.m4 >tcmdline.asm
+	z80asm -b tcmdline.asm
+	mv tcmdline.bin tcmdline.com
+
