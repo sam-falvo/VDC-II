@@ -1,6 +1,9 @@
 CPMFS=asdf.d71
 FORTH_DRIVERS=drivers/evtloop/cpm2.asm drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
 FORTH_SRCS=usecase/startup/vdcforth.asm
+TVDC_DRIVERS=drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
+TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 testdefs.asm.m4 utils.asm tester.asm
+
 
 help:
 	@echo "make d71   -- builds a D71 file named ${CPMFS} for a C128 emulator"
@@ -35,7 +38,7 @@ vdcforth.com: ${FORTH_DRIVERS} ${FORTH_SRCS}
 	mv vdcforth.bin vdcforth.com
 
 
-tvdc.com: tvdc.asm.m4 testdefs.asm.m4 drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm utils.asm tester.asm
-	m4 tvdc.asm.m4 >tvdc.asm
+tvdc.com: ${TVDC_DRIVERS} ${TVDC_SRCS}
+	m4 drivers/vdc/tests/tvdc.asm.m4 >tvdc.asm
 	z80asm -b tvdc.asm
 	mv tvdc.bin tvdc.com
