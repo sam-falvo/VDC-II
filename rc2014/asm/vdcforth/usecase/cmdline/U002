@@ -2,13 +2,17 @@ Title: Command Entry
 
 Note:
 
-The command entry field is not intended for general purpose
-programming or use as a general purpose command-line interface.  It is
-primarily intended, instead, to function as a kind of task switcher.
+The command entry field is not intended for general purpose programming or use
+as a general purpose command-line interface.  It is primarily intended,
+instead, to function as a kind of task switcher.  The basic idea is that
+VDC-Forth would have a set of colon definitions which, when executed, would
+LOAD one or more blocks that would unload the currently running application (if
+any) and load itself in its place.  The result, from a user's perspective, is a
+display that would appear as if it were switching between screens of different
+applications.
 
-General purpose programming/automation is intended to happen in the
-block editor and/or other application(s) the user might want to
-activate.
+General purpose programming/automation is intended to happen in the block
+editor and/or other application(s) the user might want to activate.
 
 Main Behavior:
 

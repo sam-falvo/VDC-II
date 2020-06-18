@@ -109,9 +109,7 @@ AppInitialize:
 	ld	(r0),hl
 	ld	l,0
 	ld	(r1),hl
-	call	VdcPlaceCursor
-
-	jp	evtReturn
+	jp	VdcPlaceCursor
 
 
 okMsg:	defm	"OK "
