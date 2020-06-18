@@ -4,6 +4,7 @@ include(`testdefs.asm.m4')
 
 
 	call	resetTib
+	call	typedChar
 	jp	osalTerminate
 
 	include "drivers/osal/cpm2.asm"
@@ -19,6 +20,20 @@ resetTib:
 	ExpectB(0)
 	ActualB((tibLength))
 	call	TestEqual
+
+	ret
+
+
+typedChar:
+	call	TibReset
+
+	ld	a,41h
+	call	TibChar
+
+	Test("A non-empty TIB has a length")
+	ExpectB(0)
+	ActualB((tibLength))
+	call	TestNotEqual
 
 	ret
 

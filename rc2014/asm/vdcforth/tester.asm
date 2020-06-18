@@ -64,6 +64,20 @@ TestEqual:
 	ret
 
 
+TestNotEqual:
+; As above, except testing for non-equality.
+
+	ld	a,(testExpected)
+	ld	hl,testActual
+	cp	a,(hl)
+	ret	nz
+	ld	a,(testExpected+1)
+	inc	hl
+	cp	a,(hl)
+	ret	nz
+	jr	TestFailed
+
+
 testFileName:	defw	0
 testFileLine:	defw	0
 testReason:	defw	0

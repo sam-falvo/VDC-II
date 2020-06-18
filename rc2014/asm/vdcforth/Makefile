@@ -4,7 +4,7 @@ FORTH_SRCS=usecase/startup/vdcforth.asm
 TVDC_DRIVERS=drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 testdefs.asm.m4 utils.asm tester.asm
 TCMDLINE_DRIVERS=drivers/osal/cpm2.asm
-TCMDLINE_SRCS=tcmdline.asm testdefs.asm.m4 utils.asm tester.asm usecase/cmdline/tib.asm
+TCMDLINE_SRCS=testdefs.asm.m4 utils.asm tester.asm usecase/cmdline/tib.asm
 
 
 help:
