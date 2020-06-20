@@ -19,6 +19,12 @@ gol:	bumpid
 define(`ExpectB',`ld	a,$1
 	call	TestSetExpectedB
 ')dnl
+define(`ExpectW',`ld	hl,$1
+	ld	(testExpected),hl
+')dnl
 define(`ActualB', `ld	a,$1
 	call	TestSetActualB
+')dnl
+define(`ActualW', `ld	hl,$1
+	ld	(testActual),hl
 ')dnl
