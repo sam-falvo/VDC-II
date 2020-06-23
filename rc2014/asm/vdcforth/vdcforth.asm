@@ -19,4 +19,6 @@
 	include "drivers/data.asm"
 
 	include "usecase/startup/vdcforth.asm"
+	include "usecase/cmdline/tib.asm"
+	include "usecase/cmdline/control.asm"
 

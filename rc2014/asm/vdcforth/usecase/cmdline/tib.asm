@@ -1,7 +1,12 @@
 ; Terminal Input Buffer
-
+;
+; In an MVC or PAC triad, this listing implements the "model".
 
 TibSetExtent:
+; Configures the Terminal Input Buffer.  You provide the bytes,
+; how many bytes already are populated, and how many bytes the
+; string can get.
+;
 ; Inputs:	BC=number of characters already in input buffer
 ;		DE=maximum capacity of input buffer
 ;		HL=address of buffer
@@ -41,6 +46,9 @@ TibCapacity:
 
 
 TibTypeChar:
+; When a user types a non-control character, this procedure is called to insert
+; it into the TIB at the current insertion point.
+;
 ; Inputs:	A=character typed
 ; Outputs:
 ; Destroys:	HL
@@ -59,6 +67,9 @@ TibTypeChar:
 
 
 TibBackspace:
+; When the user taps the backspace key, this procedure is called to effect the
+; backspace.
+; 
 ; Inputs:
 ; Outputs:
 ; Destroys:

@@ -105,11 +105,8 @@ AppInitialize:
 	ld	(r4),a
 	call	VdcDrawAttrSlab
 
-	ld	hl,3
-	ld	(r0),hl
-	ld	l,0
-	ld	(r1),hl
-	jp	VdcPlaceCursor
+	call	initKeyboard
+	jp	PaintCmdLine
 
 
 okMsg:	defm	"OK "

@@ -20,7 +20,24 @@ VdcInitialize:
 
 	call	VdcInitMode
 	call	VdcInitFont
+	call	VdcInitCursor
 	ret
+
+
+VdcInitCursor:
+	; Set a block cursor for all 8 scanlines.
+	; NOTE: We set R11 to 8 instead of 7 because the 8563
+	; and 8568 has a bug where if you set it to 7, then the
+	; final line of the cursor will not be displayed.  This
+	; "workaround" should be compatible with the VDC-II as
+	; well, even though it does not have this bug.
+
+	ld	a,10
+	ld	e,0
+	call	VdcOutByte
+	ld	a,11
+	ld	e,8
+	jp	VdcOutByte
 
 
 VdcInitFont:
@@ -291,31 +308,18 @@ VdcDrawAttrLine:
 _CalcUpdatePtr:
 ; Inputs:	DE = base address (0 for text, 0C00H for attrs)
 ; Destroys: 	AF, DE, HL
-
-	push	de
-	ld	a,(r1)			; HL := r1 * 80
-	and	a,1FH
-	add	a,a
-	ld	e,a
-	ld	d,0
-	ld	hl,times80table
-	add	hl,de
-	ld	a,(hl)
-	inc	hl
-	ld	h,(hl)
-	ld	l,a
-	ld	de,(r0)			; HL := (r1 * 80) + r0
-	add	hl,de
-	pop	de
-	add	hl,de
-	ex	de,hl
+	call	_CalcAddress
 	jp	VdcSetUpdatePtr
 
 
 _CalcCursorPtr:
 ; Inputs:	DE = base address (typically, 0 for text)
 ; Destroys: 	AF, DE, HL
+	call	_CalcAddress
+	jp	VdcSetCursorPtr
 
+
+_CalcAddress:
 	push	de
 	ld	a,(r1)			; HL := r1 * 80
 	and	a,1FH
@@ -333,8 +337,7 @@ _CalcCursorPtr:
 	pop	de
 	add	hl,de
 	ex	de,hl
-	jp	VdcSetCursorPtr
-
+	ret
 
 .times80table
 	defw	0, 80, 160, 240, 320, 400, 480, 560
@@ -356,18 +359,37 @@ VdcPrintRawText:
 ; Outputs:
 ; Destroys:	AF, BC, DE, HL
 
-	ld	de,0000h
-	call	_CalcUpdatePtr
-	ld	hl,(r2)
+	; If no more characters are left to print, just return.
 	ld	a,(r3)
 	ld	b,a
+	ld	a,(r3+1)
+	or	b
+	ret	z
 
-.printrawtextloop
+	; Otherwise, print the next character, and repeat.
+	ld	hl,(r2)
 	ld	a,(hl)
 	inc	hl
-	call	VdcWriteByte
-	djnz	printrawtextloop
-	ret
+	ld	(r2),hl
+	call	VdcPutChar
+
+	ld	hl,(r3)
+	dec	hl
+	ld	(r3),hl
+	jr	VdcPrintRawText
+
+; 	ld	de,0000h
+; 	call	_CalcUpdatePtr
+; 	ld	hl,(r2)
+; 	ld	a,(r3)
+; 	ld	b,a
+; 
+; .printrawtextloop
+; 	ld	a,(hl)
+; 	inc	hl
+; 	call	VdcWriteByte
+; 	djnz	printrawtextloop
+; 	ret
 
 VdcVsyncCheck:
 ; Checks for a VSYNC event and, if it happens, invokes the VSYNC event

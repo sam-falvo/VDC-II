@@ -1,6 +1,6 @@
 CPMFS=asdf.d71
 FORTH_DRIVERS=drivers/evtloop/cpm2.asm drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
-FORTH_SRCS=usecase/startup/vdcforth.asm
+FORTH_SRCS=usecase/startup/vdcforth.asm usecase/cmdline/tib.asm usecase/cmdline/control.asm
 TVDC_DRIVERS=drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 testdefs.asm.m4 utils.asm tester.asm
 TCMDLINE_DRIVERS=drivers/osal/cpm2.asm
