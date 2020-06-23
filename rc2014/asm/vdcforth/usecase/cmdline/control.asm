@@ -18,7 +18,7 @@ initKeyboard:
 onKey:
 	cp	a,20H
 	jr	c,doCtrlChar
-	cp	a,7EH
+	cp	a,7FH
 	jr	nc,doCtrlChar
 	call	TibTypeChar
 	jp	PaintCmdLine
