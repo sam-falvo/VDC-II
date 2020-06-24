@@ -1,0 +1,9 @@
+; defc BACKSPACE = 8
+defc BACKSPACE = 127		; Is this C128-specific??
+defc RETURN = 13
+
+defc LEFTMARGIN = 3
+defc RIGHTMARGIN = 80
+defc CMDBUFLEN = RIGHTMARGIN - LEFTMARGIN
+
+

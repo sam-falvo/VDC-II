@@ -18,7 +18,9 @@
 	include "drivers/vdc/c128.asm"
 	include "drivers/data.asm"
 
+	include	"consts.asm"
 	include "usecase/startup/vdcforth.asm"
-	include "usecase/cmdline/tib.asm"
-	include "usecase/cmdline/control.asm"
+	include "usecase/cmdline/tib.asm"		; model
+	include "usecase/cmdline/view.asm"		; view
+	include "usecase/cmdline/control.asm"		; controller
 

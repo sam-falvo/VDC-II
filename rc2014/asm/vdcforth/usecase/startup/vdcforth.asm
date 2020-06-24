@@ -41,37 +41,11 @@ AppInitialize:
 	ld	(r4),hl		; Fill screen with spaces
 	call	VdcDrawTextSlab
 
-	; Print OK prompt
-
-	ld	hl,0		; Place OK prompt at top of the screen.
-	ld	(r0),hl
-	ld	(r1),hl
-	ld	hl,okMsg
-	ld	(r2),hl
-	ld	hl,okLen
-	ld	(r3),hl
-	call	VdcPrintRawText
-
-	; Color the command line and stack status line
-
-	ld	hl,0
-	ld	(r0),hl		; left
-	ld	(r1),hl		; top
-	ld	a,(vdcCharWidth)
-	ld	(r2),a		; right
-	ld	a,0Eh
-	ld	(r4),a		; Make command-line text bright grey
-	call	VdcDrawAttrLine
-
-	ld	hl,0
-	ld	(r0),hl		; left
-	ld	(r1),hl		; top
-	ld	a,okLen
-		ld a,3
-	ld	(r2),a		; right
 	ld	a,0Fh
-	ld	(r4),a		; Make OK prompt itself white.
-	call	VdcDrawAttrLine
+	ld	(okAttribs),a
+	call	ColorCmdLine
+
+	; color the stack status line
 
 	ld	hl,0
 	ld	(r0),hl		; left
@@ -106,11 +80,8 @@ AppInitialize:
 	call	VdcDrawAttrSlab
 
 	call	initKeyboard
+	call	PaintOK
 	jp	PaintCmdLine
-
-
-okMsg:	defm	"OK "
-defc okLen = ASMPC - okMsg
 
 
 banner:	defm	"VDC-Forth Kernel V1",13,10
