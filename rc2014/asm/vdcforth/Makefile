@@ -5,7 +5,8 @@ TVDC_DRIVERS=drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 testdefs.asm.m4 utils.asm tester.asm
 TCMDLINE_DRIVERS=drivers/osal/cpm2.asm
 TCMDLINE_SRCS=usecase/cmdline/tcmdline.asm.m4 testdefs.asm.m4 utils.asm tester.asm usecase/cmdline/tib.asm
-
+TSTREQ_DRIVERS=drivers/osal/cpm2.asm
+TSTREQ_SRCS=usecase/cmdline/tstreq.asm.m4 usecase/cmdline/strings.asm testdefs.asm.m4 utils.asm tester.asm
 
 help:
 	@echo "make d71   -- builds a D71 file named ${CPMFS} for a C128 emulator"
@@ -25,10 +26,11 @@ run: d71
 
 
 .phony: d71
-d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com
+d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com tstreq.com
 	yes | ctools ${CPMFS} p vdcforth.com >/dev/null
 	yes | ctools ${CPMFS} p tvdc.com >/dev/null
 	yes | ctools ${CPMFS} p tcmdline.com >/dev/null
+	yes | ctools ${CPMFS} p tstreq.com >/dev/null
 
 
 .phony: ${CPMFS}
@@ -52,3 +54,7 @@ tcmdline.com: ${TCMDLINE_DRIVERS} ${TCMDLINE_SRCS}
 	z80asm -b tcmdline.asm
 	mv tcmdline.bin tcmdline.com
 
+tstreq.com: ${TSTREQ_DRIVERS} ${TSTREQ_SRCS}
+	m4 usecase/cmdline/tstreq.asm.m4 >tstreq.asm
+	z80asm -b tstreq.asm
+	mv tstreq.bin tstreq.com
