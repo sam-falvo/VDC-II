@@ -18,7 +18,7 @@ help:
 .phony: clean
 clean:
 	rm -f *.o *.err *.com *.bin ${CPMFS}
-	rm -f tvdc.asm tcmdline.asm
+	rm -f tvdc.asm tcmdline.asm tstreq.asm
 
 .phony: run
 run: d71
