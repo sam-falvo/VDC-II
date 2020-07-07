@@ -5,6 +5,7 @@ StrCompare:
 ; Inputs:	(r0) points to first string's length byte.
 ; 		(r1) points to second string's length byte.
 ; Outputs:	A=0 if strings are equal; non-zero otherwise.
+;		Z-flag set appropriately.
 ; Destroys:	BC, DE, HL, (r0), (r1)
 
         ld	de,(r0)
@@ -20,8 +21,8 @@ StrCompare_Loop:
 	ld	a,(de)
 	inc	de
 	cp	(hl)
-	inc	hl
 	jr	nz,StrCompare_NotEqual
+	inc	hl
 	djnz	StrCompare_Loop
 
 StrCompare_Equal:

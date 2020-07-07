@@ -1,12 +1,24 @@
+PLATFORM=c128
+OS=cpm2
 CPMFS=asdf.d71
-FORTH_DRIVERS=drivers/evtloop/cpm2.asm drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
+
+OSAL=drivers/osal/${OS}.asm
+EVTLOOP=drivers/evtloop/${OS}.asm drivers/data.asm
+VDC=drivers/vdc/${PLATFORM}.asm drivers/data.asm
+
+TEST_SRCS=testdefs.asm.m4 utils.asm tester.asm
+
+FORTH_DRIVERS=${EVTLOOP} ${OSAL} ${VDC}
 FORTH_SRCS=consts.asm usecase/startup/vdcforth.asm usecase/cmdline/tib.asm usecase/cmdline/control.asm usecase/cmdline/view.asm
-TVDC_DRIVERS=drivers/osal/cpm2.asm drivers/vdc/c128.asm drivers/data.asm
-TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 testdefs.asm.m4 utils.asm tester.asm
-TCMDLINE_DRIVERS=drivers/osal/cpm2.asm
-TCMDLINE_SRCS=usecase/cmdline/tcmdline.asm.m4 testdefs.asm.m4 utils.asm tester.asm usecase/cmdline/tib.asm
-TSTREQ_DRIVERS=drivers/osal/cpm2.asm
-TSTREQ_SRCS=usecase/cmdline/tstreq.asm.m4 usecase/cmdline/strings.asm testdefs.asm.m4 utils.asm tester.asm
+TVDC_DRIVERS=${OSAL} ${VDC}
+TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 ${TEST_SRCS}
+TCMDLINE_DRIVERS=${OSAL}
+TCMDLINE_SRCS=usecase/cmdline/tcmdline.asm.m4 usecase/cmdline/tib.asm ${TEST_SRCS}
+TSTREQ_DRIVERS=${OSAL}
+TSTREQ_SRCS=usecase/cmdline/tstreq.asm.m4 usecase/cmdline/strings.asm ${TEST_SRCS}
+TINTERP_DRIVERS=${OSAL}
+TINTERP_SRCS=usecase/cmdline/tinterp.asm.m4 usecase/cmdline/interp.asm usecase/cmdline/tib.asm ${TEST_SRCS}
+
 
 help:
 	@echo "make d71   -- builds a D71 file named ${CPMFS} for a C128 emulator"
@@ -26,11 +38,12 @@ run: d71
 
 
 .phony: d71
-d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com tstreq.com
+d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com tstreq.com tinterp.com
 	yes | ctools ${CPMFS} p vdcforth.com >/dev/null
 	yes | ctools ${CPMFS} p tvdc.com >/dev/null
 	yes | ctools ${CPMFS} p tcmdline.com >/dev/null
 	yes | ctools ${CPMFS} p tstreq.com >/dev/null
+	yes | ctools ${CPMFS} p tinterp.com >/dev/null
 
 
 .phony: ${CPMFS}
@@ -58,3 +71,8 @@ tstreq.com: ${TSTREQ_DRIVERS} ${TSTREQ_SRCS}
 	m4 usecase/cmdline/tstreq.asm.m4 >tstreq.asm
 	z80asm -b tstreq.asm
 	mv tstreq.bin tstreq.com
+
+tinterp.com: ${TINTERP_DRIVERS} ${TINTERP_SRCS}
+	m4 usecase/cmdline/tinterp.asm.m4 >tinterp.asm
+	z80asm -b tinterp.asm
+	mv tinterp.bin tinterp.com

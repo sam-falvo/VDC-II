@@ -86,3 +86,25 @@ osalConsoleOut:
 
 osalhextab:	defm	"0123456789ABCDEF"
 
+osalSpace:
+; Prints a single space.
+;
+; Inputs:
+; Outputs:
+; Destroys:	BC, DE
+
+	ld	e,20H
+	jp	osalConsoleOut
+
+
+osalNewLine:
+; Puts the cursor on the next line and homes the cursor to the left edge.
+;
+; Inputs:
+; Outputs:
+; Destroys:	BC, DE
+
+	ld	e,0DH
+	call	osalConsoleOut
+	ld	e,0AH
+	jp	osalConsoleOut
