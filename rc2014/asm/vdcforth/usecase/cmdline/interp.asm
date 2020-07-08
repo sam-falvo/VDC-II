@@ -91,8 +91,7 @@ InterpSkipGraphic_again:
 	ld	a,(hl)
 	cp	21H
 	ret	c
-	sbc	hl,bc	; HL=HL-BC-1 b/c carry is known to be set
-	inc	hl	; HL=HL-BC=(interpIndex)
+	sbc	hl,bc	; HL=HL-BC-0=(interpIndex) b/c carry is known to be clear
 	inc	hl	; compute next index offset
 
 	ld	(interpIndex),hl
