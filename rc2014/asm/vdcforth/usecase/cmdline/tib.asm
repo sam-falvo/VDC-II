@@ -23,6 +23,18 @@ TibSetExtent:
 	ret
 
 
+TibEmpty:
+; Empties the current TIB.
+;
+; Inputs:
+; Outputs:
+; Destroys: HL
+
+	ld	hl,(tibBuffer)
+	ld	(tibInsertionPt),hl
+	ret
+
+
 TibLength:
 ; Inputs:
 ; Outputs:	HL=current length of input buffer (0 <= HL < capacity)

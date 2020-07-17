@@ -108,3 +108,13 @@ osalNewLine:
 	call	osalConsoleOut
 	ld	e,0AH
 	jp	osalConsoleOut
+
+osalColon:
+; Prints a colon.
+;
+; Inputs:
+; Outputs:
+; Destroys:	BC, DE
+
+	ld	e,':'
+	jp	osalConsoleOut
