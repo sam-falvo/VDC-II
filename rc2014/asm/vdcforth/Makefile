@@ -9,7 +9,14 @@ VDC=drivers/vdc/${PLATFORM}.asm drivers/data.asm
 TEST_SRCS=testdefs.asm.m4 utils.asm tester.asm
 
 FORTH_DRIVERS=${EVTLOOP} ${OSAL} ${VDC}
-FORTH_SRCS=consts.asm usecase/startup/vdcforth.asm usecase/cmdline/tib.asm usecase/cmdline/control.asm usecase/cmdline/view.asm
+FORTH_SRCS=consts.asm \
+	   usecase/startup/vdcforth.asm \
+	   usecase/cmdline/tib.asm \
+	   usecase/cmdline/control.asm \
+	   usecase/cmdline/view.asm \
+	   usecase/cmdline/strings.asm \
+	   usecase/cmdline/interp.asm \
+	   usecase/cmdline/dict.asm
 TVDC_DRIVERS=${OSAL} ${VDC}
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 ${TEST_SRCS}
 TCMDLINE_DRIVERS=${OSAL}
@@ -30,7 +37,7 @@ help:
 .phony: clean
 clean:
 	rm -f *.o *.err *.com *.bin ${CPMFS}
-	rm -f tvdc.asm tcmdline.asm tstreq.asm
+	rm -f tvdc.asm tcmdline.asm tstreq.asm tinterp.asm
 
 .phony: run
 run: d71
@@ -52,7 +59,7 @@ ${CPMFS}:
 
 
 vdcforth.com: ${FORTH_DRIVERS} ${FORTH_SRCS}
-	z80asm -b vdcforth.asm
+	z80asm -l -b vdcforth.asm
 	mv vdcforth.bin vdcforth.com
 
 

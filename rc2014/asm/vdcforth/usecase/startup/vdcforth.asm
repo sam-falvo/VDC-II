@@ -80,6 +80,7 @@ AppInitialize:
 	call	VdcDrawAttrSlab
 
 	call	initKeyboard
+	call	initDictionary
 	call	PaintOK
 	jp	PaintCmdLine
 

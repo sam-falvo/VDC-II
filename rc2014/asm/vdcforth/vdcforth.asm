@@ -23,4 +23,7 @@
 	include "usecase/cmdline/tib.asm"		; model
 	include "usecase/cmdline/view.asm"		; view
 	include "usecase/cmdline/control.asm"		; controller
+	include "usecase/cmdline/strings.asm"
+	include "usecase/cmdline/interp.asm"
+	include "usecase/cmdline/dict.asm"		; MUST be last include.
 

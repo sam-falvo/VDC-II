@@ -1,15 +1,3 @@
-InterpCmdLine:
-; Interprets the current contents of the TIB.  Upon completion, or upon
-; an error, the TIB is cleared, and we return.  The state of the data stack
-; may be different.
-;
-; Inputs:
-; Outputs:
-; Destroys:	AF, BC, DE, HL
-
-	ret
-
-
 InterpNextWord:
 ; Parses the next white-space-delimited word from the TIB, and places it in
 ; counted-string form at HERE.  Skips leading whitespace.
@@ -175,6 +163,12 @@ InterpFindWord_found:
 
 
 InterpExecute:
+; Given an execution token, execute the code for the definition.
+;
+; Inputs:	HL=execution token (e.g., from InterpFindWord).
+; Outputs:	anything.
+; Destroys:	AF, BC, DE, HL, IX, IY
+
 	inc	hl
 	inc	hl
 	inc	hl
