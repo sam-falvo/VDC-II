@@ -25,6 +25,8 @@ TSTREQ_DRIVERS=${OSAL}
 TSTREQ_SRCS=usecase/cmdline/tstreq.asm.m4 usecase/cmdline/strings.asm ${TEST_SRCS}
 TINTERP_DRIVERS=${OSAL}
 TINTERP_SRCS=usecase/cmdline/tinterp.asm.m4 usecase/cmdline/interp.asm usecase/cmdline/tib.asm ${TEST_SRCS}
+TMATH_DRIVERS=${OSAL} drivers/math.asm
+TMATH_SRCS=drivers/tmath.asm.m4 ${TEST_SRCS}
 
 
 help:
@@ -45,12 +47,13 @@ run: d71
 
 
 .phony: d71
-d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com tstreq.com tinterp.com
+d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com tstreq.com tinterp.com tmath.com
 	yes | ctools ${CPMFS} p vdcforth.com >/dev/null
 	yes | ctools ${CPMFS} p tvdc.com >/dev/null
 	yes | ctools ${CPMFS} p tcmdline.com >/dev/null
 	yes | ctools ${CPMFS} p tstreq.com >/dev/null
 	yes | ctools ${CPMFS} p tinterp.com >/dev/null
+	yes | ctools ${CPMFS} p tmath.com >/dev/null
 
 
 .phony: ${CPMFS}
@@ -83,3 +86,8 @@ tinterp.com: ${TINTERP_DRIVERS} ${TINTERP_SRCS}
 	m4 usecase/cmdline/tinterp.asm.m4 >tinterp.asm
 	z80asm -b tinterp.asm
 	mv tinterp.bin tinterp.com
+
+tmath.com: ${TMATH_DRIVERS} ${TMATH_SRCS}
+	m4 drivers/tmath.asm.m4 >tmath.asm
+	z80asm -b tmath.asm
+	mv tmath.bin tmath.com
