@@ -17,6 +17,7 @@
 	include "drivers/osal/cpm2.asm"
 	include "drivers/vdc/c128.asm"
 	include "drivers/data.asm"
+	include "drivers/math.asm"
 
 	include	"consts.asm"
 	include "usecase/startup/vdcforth.asm"
@@ -25,5 +26,6 @@
 	include "usecase/cmdline/control.asm"		; controller
 	include "usecase/cmdline/strings.asm"
 	include "usecase/cmdline/interp.asm"
+	include "usecase/cmdline/stack.asm"
 	include "usecase/cmdline/dict.asm"		; MUST be last include.
 

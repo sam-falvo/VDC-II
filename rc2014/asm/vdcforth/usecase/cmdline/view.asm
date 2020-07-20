@@ -1,3 +1,26 @@
+PaintStackLine:
+	ld	a,20H			; Blank contents of the stack line
+	ld	(stackBuffer),a
+	ld	hl,stackBuffer
+	ld	(stkviewBuffer),hl
+	ld	de,stackBuffer+1
+	ld	bc,79
+	ldir
+	ld	hl,stackBuffer+79	; before repainting it anew.
+	ld	(stkviewBufPos),hl
+	call	StackBuildView
+
+	ld	hl,0
+	ld	(r0),hl
+	ld	l,1
+	ld	(r1),hl
+	ld	hl,stackBuffer
+	ld	(r2),hl
+	ld	hl,80
+	ld	(r3),hl
+	jp	VdcPrintRawText
+
+
 PaintCmdLine:
 	ld	hl,LEFTMARGIN
 	ld	(r0),hl
@@ -68,4 +91,7 @@ defc okLen = ASMPC - okMsg
 
 okAttribs:
 	defb	0FH		; XOR with 0FH to toggle visibility.
+
+
+stackBuffer:	defs	80
 

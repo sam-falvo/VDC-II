@@ -8,7 +8,7 @@ VDC=drivers/vdc/${PLATFORM}.asm drivers/data.asm
 
 TEST_SRCS=testdefs.asm.m4 utils.asm tester.asm
 
-FORTH_DRIVERS=${EVTLOOP} ${OSAL} ${VDC}
+FORTH_DRIVERS=${EVTLOOP} ${OSAL} ${VDC} drivers/math.asm
 FORTH_SRCS=consts.asm \
 	   usecase/startup/vdcforth.asm \
 	   usecase/cmdline/tib.asm \
@@ -16,7 +16,8 @@ FORTH_SRCS=consts.asm \
 	   usecase/cmdline/view.asm \
 	   usecase/cmdline/strings.asm \
 	   usecase/cmdline/interp.asm \
-	   usecase/cmdline/dict.asm
+	   usecase/cmdline/dict.asm \
+	   usecase/cmdline/stack.asm
 TVDC_DRIVERS=${OSAL} ${VDC}
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 ${TEST_SRCS}
 TCMDLINE_DRIVERS=${OSAL}

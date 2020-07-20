@@ -23,6 +23,15 @@
 ; binary which exposes a jump table.  But, for now, everything is statically
 ; linked.
 AppInitialize:
+	; Initialize the location of the Forth data stack.
+	; Data stack resides 256 bytes below top of return stack.
+	; (stkReturn) will be initialized as a matter of course
+	; elsewhere throughout the rest of the code.
+	ld	hl,-256
+	add	hl,sp
+	ld	(stkData),hl
+	ld	(stkDBottom),hl
+
 	; Clear the screen.
 
 	ld	hl,0

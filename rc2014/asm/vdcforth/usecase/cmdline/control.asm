@@ -72,6 +72,7 @@ interpretCmdLine_Again:
 
 interpretCmdLine_finished:
         call    reset0CmdlineBuffer
+	call	PaintStackLine
         jp      PaintCmdLine
 
 interpretCmdLine_undefined:
