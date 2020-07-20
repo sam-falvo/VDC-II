@@ -27,7 +27,10 @@ TINTERP_DRIVERS=${OSAL}
 TINTERP_SRCS=usecase/cmdline/tinterp.asm.m4 usecase/cmdline/interp.asm usecase/cmdline/tib.asm ${TEST_SRCS}
 TMATH_DRIVERS=${OSAL} drivers/math.asm
 TMATH_SRCS=drivers/tmath.asm.m4 ${TEST_SRCS}
-
+TSTACK_DRIVERS=${OSAL}
+TSTACK_SRCS=usecase/cmdline/tstack.asm.m4 usecase/cmdline/stack.asm ${TEST_SRCS}
+TEST_ASMS=tvdc.asm tcmdline.asm tstreq.asm tinterp.asm tmath.asm tstack.asm
+COMS=vdcforth.com ${TEST_ASMS:%.asm=%.com}
 
 help:
 	@echo "make d71   -- builds a D71 file named ${CPMFS} for a C128 emulator"
@@ -39,7 +42,7 @@ help:
 .phony: clean
 clean:
 	rm -f *.o *.err *.com *.bin ${CPMFS}
-	rm -f tvdc.asm tcmdline.asm tstreq.asm tinterp.asm
+	rm -f ${TEST_ASMS}
 
 .phony: run
 run: d71
@@ -47,13 +50,14 @@ run: d71
 
 
 .phony: d71
-d71: ${CPMFS} vdcforth.com tvdc.com tcmdline.com tstreq.com tinterp.com tmath.com
+d71: ${CPMFS} ${COMS}
 	yes | ctools ${CPMFS} p vdcforth.com >/dev/null
 	yes | ctools ${CPMFS} p tvdc.com >/dev/null
 	yes | ctools ${CPMFS} p tcmdline.com >/dev/null
 	yes | ctools ${CPMFS} p tstreq.com >/dev/null
 	yes | ctools ${CPMFS} p tinterp.com >/dev/null
 	yes | ctools ${CPMFS} p tmath.com >/dev/null
+	yes | ctools ${CPMFS} p tstack.com >/dev/null
 
 
 .phony: ${CPMFS}
@@ -91,3 +95,8 @@ tmath.com: ${TMATH_DRIVERS} ${TMATH_SRCS}
 	m4 drivers/tmath.asm.m4 >tmath.asm
 	z80asm -b tmath.asm
 	mv tmath.bin tmath.com
+
+tstack.com: ${TSTACK_DRIVERS} ${TSTACK_SRCS}
+	m4 usecase/cmdline/tstack.asm.m4 >tstack.asm
+	z80asm -b tstack.asm
+	mv tstack.bin tstack.com
