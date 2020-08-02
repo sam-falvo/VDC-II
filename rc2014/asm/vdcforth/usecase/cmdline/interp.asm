@@ -176,6 +176,68 @@ InterpExecute:
 	jp	(hl)
 
 
+InterpConvertNumber:
+; Attempt to interpret a word representing a number, pointed to by the
+; HERE pointer.
+;
+; Zero-length words are never numbers.
+;
+; Inputs:	(interpHerePtr) points to the word, as it would be returned
+;		by a call to InterpNextWord.
+; Outputs:	A=0 if the word is not a recognizable number.  A is non-zero
+;		if it is.
+;		HL=the number if A is non-zero; otherwise, undefined.
+; Destroys:	BC, DE
+
+	ld	hl,(interpHerePtr)
+
+	; Zero-length words are never numbers.
+	ld	a,(hl)
+	or	a,a
+	ret	z
+	ld	b,a
+
+	; Starting at the first digit
+	inc	hl
+	ld	de,0			; numeric accumulator
+
+InterpConvertNumber_anotherDigit:
+	ld	a,(hl)
+	inc	hl
+	sub	a,'0'
+	jr	c,InterpConvertNumber_NaN
+	cp	a,10
+	jr	nc,InterpConvertNumber_NaN
+
+	push	hl
+	push	bc
+	push	af
+	ld	h,d
+	ld	l,e
+	ld	bc,10
+	call	UMultiplyHLbyBC
+	ex	de,hl
+	pop	af
+	pop	bc
+	pop	hl
+
+	add	a,e
+	ld	e,a
+	ld	a,d
+	adc	a,0
+	ld	d,a
+
+	djnz	InterpConvertNumber_anotherDigit
+
+	ex	de,hl
+	ld	a,1
+	ret
+
+InterpConvertNumber_NaN:
+	xor	a,a
+	ret
+
+
 interpWordStart:defw	0
 interpWordEnd:	defw	0
 interpHerePtr:	defw	0

@@ -130,3 +130,31 @@ UDivideHLbyBC_jumpin:
 	inc	e	; Otherwise, record the success and shift again.
 	jp	UDivideHLbyBC_Loop2
 
+
+UMultiplyHLbyBC:
+; Answers with the unsigned product of the unsigned multiplicands.
+;
+; Inputs:	BC=multiplicand
+;		HL=multiplicand
+; Outputs:	DE:HL=product (DE having the most significant 32-bits).
+; Destroys:	AF, BC
+;
+; Based on code found at
+; https://wikiti.brandonw.net/index.php?title=Z80_Routines:Math:Multiplication#16.2A16_multiplication
+
+	ld	a,16
+
+UMultiplyHLbyBC_again:
+	add	hl,hl
+	rl	e
+	rl	d
+	jr	nc,UMultiplyHLbyBC_0bit
+	add	hl,bc
+	jr	nc,UMultiplyHLbyBC_0bit
+	inc	de
+UMultiplyHLbyBC_0bit:
+	dec	a
+	jr	nz,UMultiplyHLbyBC_again
+
+	ret
+

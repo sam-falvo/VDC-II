@@ -30,7 +30,9 @@ TMATH_DRIVERS=${OSAL} drivers/math.asm
 TMATH_SRCS=drivers/tmath.asm.m4 ${TEST_SRCS}
 TSTACK_DRIVERS=${OSAL}
 TSTACK_SRCS=usecase/cmdline/tstack.asm.m4 usecase/cmdline/stack.asm ${TEST_SRCS}
-TEST_ASMS=tvdc.asm tcmdline.asm tstreq.asm tinterp.asm tmath.asm tstack.asm
+TNUM_DRIVERS=${OSAL}
+TNUM_SRCS=usecase/cmdline/tnum.asm.m4 usecase/cmdline/interp.asm usecase/cmdline/strings.asm usecase/cmdline/tib.asm ${TEST_SRCS}
+TEST_ASMS=tvdc.asm tcmdline.asm tstreq.asm tinterp.asm tmath.asm tstack.asm tnum.asm
 COMS=vdcforth.com ${TEST_ASMS:%.asm=%.com}
 
 help:
@@ -59,6 +61,7 @@ d71: ${CPMFS} ${COMS}
 	yes | ctools ${CPMFS} p tinterp.com >/dev/null
 	yes | ctools ${CPMFS} p tmath.com >/dev/null
 	yes | ctools ${CPMFS} p tstack.com >/dev/null
+	yes | ctools ${CPMFS} p tnum.com >/dev/null
 
 
 .phony: ${CPMFS}
@@ -101,3 +104,9 @@ tstack.com: ${TSTACK_DRIVERS} ${TSTACK_SRCS}
 	m4 usecase/cmdline/tstack.asm.m4 >tstack.asm
 	z80asm -b tstack.asm
 	mv tstack.bin tstack.com
+
+tnum.com: ${TNUM_DRIVERS} ${TNUM_SRCS}
+	m4 usecase/cmdline/tnum.asm.m4 >tnum.asm
+	z80asm -b tnum.asm
+	mv tnum.bin tnum.com
+

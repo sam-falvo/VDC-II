@@ -11,6 +11,7 @@ include(`testdefs.asm.m4')
 
         include "drivers/osal/cpm2.asm"
         include "drivers/data.asm"
+	include "drivers/math.asm"
         include "utils.asm"
         include "tester.asm"
         include "usecase/cmdline/tib.asm"

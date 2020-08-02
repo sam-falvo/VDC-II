@@ -64,6 +64,9 @@ interpretCmdLine_Again:
         call    InterpNextWord
         or      a
         jr      z,interpretCmdLine_finished
+	call	InterpConvertNumber
+	or	a
+	jr	nz,interpretCmdLine_pushHLontoDStack
         call    InterpFindWord
         or      a
         jr      z,interpretCmdLine_undefined
@@ -74,6 +77,14 @@ interpretCmdLine_finished:
         call    reset0CmdlineBuffer
 	call	PaintStackLine
         jp      PaintCmdLine
+
+interpretCmdLine_pushHLontoDStack:
+	ld	(stkReturn),sp
+	ld	sp,(stkData)
+	push	hl
+	ld	(stkData),sp
+	ld	sp,(stkReturn)
+	jr	interpretCmdLine_Again
 
 interpretCmdLine_undefined:
         ; Copy error-inducing word into the head of the TIB buffer.
