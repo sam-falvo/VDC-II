@@ -8,6 +8,10 @@ include(`testdefs.asm.m4')
 	call	words_starting_with_a_digit_
 	call	single_digit_numbers_are_converted
 	call	multi_digit_numbers_are_converted
+	call	signed_numbers_are_recognized
+	call	signed_numbers_are_converted
+	call	positive_numbers_are_recognized
+	call	positive_numbers_are_converted
 	jp	osalTerminate
 
 
@@ -107,4 +111,56 @@ multi_digit_numbers_are_converted:
 
 testWord5:
 	defb	5,"12345"
+
+
+signed_numbers_are_recognized:
+	Test("Signed numbers are recognized.")
+	ld	hl,testWord6
+	ld	(interpHerePtr),hl
+	call	InterpConvertNumber
+	call	TestSetActualB
+	ExpectB(1)
+	call	TestEqual
+	ret
+
+testWord6:
+	defb	6,"-12345"
+
+
+signed_numbers_are_converted:
+	Test("Signed numbers are converted.")
+	ld	hl,testWord6
+	ld	(interpHerePtr),hl
+	call	InterpConvertNumber
+	ld	(testActual),hl
+	ld	hl,-12345
+	ld	(testExpected),hl
+	call	TestEqual
+	ret
+
+
+positive_numbers_are_recognized:
+	Test("Positive numbers are recognized.")
+	ld	hl,testWord7
+	ld	(interpHerePtr),hl
+	call	InterpConvertNumber
+	call	TestSetActualB
+	ExpectB(1)
+	call	TestEqual
+	ret
+
+testWord7:
+	defb	6,"+12345"
+
+
+positive_numbers_are_converted:
+	Test("Positive numbers are converted.")
+	ld	hl,testWord7
+	ld	(interpHerePtr),hl
+	call	InterpConvertNumber
+	ld	(testActual),hl
+	ld	hl,12345
+	ld	(testExpected),hl
+	call	TestEqual
+	ret
 

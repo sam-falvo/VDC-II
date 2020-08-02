@@ -201,6 +201,25 @@ InterpConvertNumber:
 	inc	hl
 	ld	de,0			; numeric accumulator
 
+	; Check for sign signifier
+	ld	a,(hl)
+	cp	a,'+'
+	jr	nz,InterpConvertNumber_tryNegative
+
+	xor	a,a
+	inc	a
+	push	af			; push clear Z flag for negative sign
+	jr	InterpConvertNumber_skipSign
+
+InterpConvertNumber_tryNegative:
+	cp	a,'-'
+	push	af			; push set Z flag for negative sign
+	jr	nz,InterpConvertNumber_anotherDigit
+
+InterpConvertNumber_skipSign:
+	inc	hl		; Skip over '-' character.
+	dec	b		; Decrement length to compensate.
+
 InterpConvertNumber_anotherDigit:
 	ld	a,(hl)
 	inc	hl
@@ -229,11 +248,20 @@ InterpConvertNumber_anotherDigit:
 
 	djnz	InterpConvertNumber_anotherDigit
 
+	pop	af
+	jr	nz,InterpConvertNumber_unsigned
+	ld	hl,0
+	or	a,a		; clear carry
+	sbc	hl,de		; HL := 0-HL
+	ex	de,hl
+
+InterpConvertNumber_unsigned:
 	ex	de,hl
 	ld	a,1
 	ret
 
 InterpConvertNumber_NaN:
+	pop	af
 	xor	a,a
 	ret
 
