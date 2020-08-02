@@ -30,6 +30,8 @@ Exceptional Behavior:
 
 2c. (OPTIONAL) CTRL-A points the cursor at the beginning of the text entry.  CTRL-E points the cursor at the very end.  CTRL-F moves the cursor forward (right) one character.  CTRL-B moves the cursor back (left) one character without deleting anything.  CTRL-D deletes the currently highlighted character.  CTRL-H is backspace.  CTRL-K disposes of the text starting at the cursor and extending to the current end of the buffer.  CTRL-U disposes of the entire line, regardless of where the cursor is positioned (it's equivalent to CTRL-A CTRL-K).
 
-3. If an unknown command appears in the input stream, then an error is reported to the user and further interpretation halts.
+3a. If an unknown command appears in the input stream, then an error is reported to the user and further interpretation halts.
+
+3b. If a string of characters starts with a decimal digit, it is interpreted as an unsigned 16-bit number in decimal.
 
 4. If the user asked VDC-Forth to exit back to CP/M, then OK is not printed.
