@@ -1,3 +1,75 @@
+UDivideHLDEbyBC:
+; Performs an *unsigned* division, calculating BC=HLDE/BC.
+;
+; Inputs:	HL is the top 16-bits of the dividend.
+;		DE is the bottom 16-bits of the dividend.
+;		BC is the 16-bit divisor.
+;
+;		Note: 32-bit quantity is in HLDE, *not*
+;		DEHL as is normally the case.
+;
+; Outputs:	HL is the remainder.
+;		BC is the quotient.
+;
+; Destroys:	AF, DE
+;
+; This code was originally found in CamelForth.  I tweaked the code
+; found at: https://github.com/robertjuhasz/camabc/blob/master/camabc.azm
+;
+; NOTE 1: What is the value proposition for shifting HLDE left by one bit
+; prior to the entry of the loop?  Let's pretend we're working with a 4-bit
+; quantity, and that HLDE makes up an 8-bit quantity.  Given that we start
+; with:
+;
+; HLDE: 10110100
+;   BC: 1010
+; 
+; and we shift HLDE left, we end up with:
+;
+; HLDE: 01101000 (cy=1)
+;   BC: 1010
+;
+; and when we subtract, we're going to get a negative value.
+;
+; HLDE: 11001000 (cy=1)
+;   BC: 1010
+;
+; This doesn't seem right to me.  (And, yet, it seems to work.  ???!!!)
+        ld      a,16    ; loop counter
+
+        sla     e       ; shift HLDE left (saf2: WHY?  Note 1)
+        rl      d       ; hi bit HLDE -> carry
+udloop: adc     hl,hl   ; carry = HLDE[31]
+        jr      nc,udiv3
+
+        ; case 1: 17 bit, cy:HL = 1xxxx
+        or      a,a     ; we know we can subtract (saf2: WHY?  Note 1)
+        sbc     hl,bc
+        or      a,a     ; clear cy to indicate sub ok
+        jr      udiv4
+
+        ; case 2: 16 bit, cy:HL = 0xxxx
+udiv3:  sbc     hl,bc   ; try the subtract
+        jr      nc,udiv4 ; if no cy, subtract ok
+        add     hl,bc   ; else cancel the subtract
+        scf             ;   and set cy to indicate
+
+udiv4:  rl      e       ; rotate result bit into DE,
+        rl      d       ; and next bit of DE into cy
+        dec     a
+        jr      nz,udloop
+
+        ; now have complemented quotient in DE,
+        ; and remainder in HL
+        ld      a,d
+        cpl
+        ld      b,a
+        ld      a,e
+        cpl
+        ld      c,a
+	ret
+
+
 SDivideHLbyBC:
 ; Performs a *signed* division, calculating DE=HL/BC.
 ;
@@ -94,6 +166,9 @@ UDivideHLbyBC:
 ; This code is based on the SDivideHLbyBC procedure above, modified to
 ; remove all sign-related logic.
 ;
+; If you don't need to divide a 32-bit number by a 16-bit number,
+; you should call this procedure.  It's faster.
+;
 ; Inputs:	HL is the numerator
 ;		BC is the denominator
 ;
@@ -141,8 +216,16 @@ UMultiplyHLbyBC:
 ;
 ; Based on code found at
 ; https://wikiti.brandonw.net/index.php?title=Z80_Routines:Math:Multiplication#16.2A16_multiplication
+;
+; NOTE: Seems to also work for signed inputs too?
+; -2 -5 * --> +10
+; -2 5 * --> -10
+; 2 -5 * --> -10
+; 2 5 * --> +10
 
 	ld	a,16
+	ld	de,0
+	ex	de,hl
 
 UMultiplyHLbyBC_again:
 	add	hl,hl
@@ -155,6 +238,6 @@ UMultiplyHLbyBC_again:
 UMultiplyHLbyBC_0bit:
 	dec	a
 	jr	nz,UMultiplyHLbyBC_again
-
 	ret
+
 

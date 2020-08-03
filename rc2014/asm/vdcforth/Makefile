@@ -9,6 +9,7 @@ VDC=drivers/vdc/${PLATFORM}.asm drivers/data.asm
 TEST_SRCS=testdefs.asm.m4 utils.asm tester.asm
 
 FORTH_DRIVERS=${EVTLOOP} ${OSAL} ${VDC} drivers/math.asm
+DICT_DEPS=usecase/cmdline/words/core.m4
 FORTH_SRCS=consts.asm \
 	   usecase/startup/vdcforth.asm \
 	   usecase/cmdline/tib.asm \
@@ -16,8 +17,9 @@ FORTH_SRCS=consts.asm \
 	   usecase/cmdline/view.asm \
 	   usecase/cmdline/strings.asm \
 	   usecase/cmdline/interp.asm \
-	   usecase/cmdline/dict.asm \
-	   usecase/cmdline/stack.asm
+	   dict.asm \
+	   usecase/cmdline/stack.asm \
+	   ${DICT_DEPS}
 TVDC_DRIVERS=${OSAL} ${VDC}
 TVDC_SRCS=drivers/vdc/tests/tvdc.asm.m4 ${TEST_SRCS}
 TCMDLINE_DRIVERS=${OSAL}
@@ -46,6 +48,7 @@ help:
 clean:
 	rm -f *.o *.err *.com *.bin ${CPMFS}
 	rm -f ${TEST_ASMS}
+	rm -f dict.asm
 
 .phony: run
 run: d71
@@ -109,4 +112,7 @@ tnum.com: ${TNUM_DRIVERS} ${TNUM_SRCS}
 	m4 usecase/cmdline/tnum.asm.m4 >tnum.asm
 	z80asm -b tnum.asm
 	mv tnum.bin tnum.com
+
+dict.asm: usecase/cmdline/dict.asm.m4 ${DICT_DEPS}
+	m4 usecase/cmdline/dict.asm.m4 >dict.asm
 

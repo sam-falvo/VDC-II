@@ -13,19 +13,19 @@
 ; 30 years.  Forgive any style demerits; it's been a while.
 
 
-	include	"drivers/evtloop/cpm2.asm"
-	include "drivers/osal/cpm2.asm"
-	include "drivers/vdc/c128.asm"
-	include "drivers/data.asm"
-	include "drivers/math.asm"
+        include "drivers/evtloop/cpm2.asm"
+        include "drivers/osal/cpm2.asm"
+        include "drivers/vdc/c128.asm"
+        include "drivers/data.asm"
+        include "drivers/math.asm"
 
-	include	"consts.asm"
-	include "usecase/startup/vdcforth.asm"
-	include "usecase/cmdline/tib.asm"		; model
-	include "usecase/cmdline/view.asm"		; view
-	include "usecase/cmdline/control.asm"		; controller
-	include "usecase/cmdline/strings.asm"
-	include "usecase/cmdline/interp.asm"
-	include "usecase/cmdline/stack.asm"
-	include "usecase/cmdline/dict.asm"		; MUST be last include.
+        include "consts.asm"
+        include "usecase/startup/vdcforth.asm"
+        include "usecase/cmdline/tib.asm"               ; model
+        include "usecase/cmdline/view.asm"              ; view
+        include "usecase/cmdline/control.asm"           ; controller
+        include "usecase/cmdline/strings.asm"
+        include "usecase/cmdline/interp.asm"
+        include "usecase/cmdline/stack.asm"
+        include "dict.asm"                              ; MUST be last include.
 
