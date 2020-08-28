@@ -1,4 +1,4 @@
-update=Sat 06 Jun 2020 06:18:25 PM PDT
+update=Fri 28 Aug 2020 02:24:20 PM PDT
 version=1
 last_client=kicad
 [general]
@@ -239,6 +239,17 @@ Enabled=0
 Name=Default
 Clearance=0.127
 TrackWidth=0.127
+ViaDiameter=0.4572
+ViaDrill=0.254
+uViaDiameter=0.4572
+uViaDrill=0.254
+dPairWidth=0.127
+dPairGap=0.127
+dPairViaGap=0.25
+[pcbnew/Netclasses/1]
+Name=Power
+Clearance=0.254
+TrackWidth=0.254
 ViaDiameter=0.4572
 ViaDrill=0.254
 uViaDiameter=0.4572

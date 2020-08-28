@@ -975,19 +975,19 @@ F 3 "" H 10850 4300 50  0001 C CNN
 	1    10850 4300
 	1    0    0    -1  
 $EndComp
-Wire Bus Line
-	10750 4600 10750 5750
-Wire Bus Line
-	9200 4300 9200 5750
 $Comp
-L card-rescue:VDC-II-card U?
+L card-rescue:VDC-II-card U4
 U 1 1 5F4BB38A
 P 8200 4750
-F 0 "U?" H 8350 5900 50  0000 C CNN
+F 0 "U4" H 8350 5900 50  0000 C CNN
 F 1 "VDC-II-card" H 8550 5800 50  0000 C CNN
-F 2 "" H 8200 4750 50  0001 C CNN
+F 2 "Package_DIP:DIP-28_W15.24mm_Socket" H 8200 4750 50  0001 C CNN
 F 3 "" H 8200 4750 50  0001 C CNN
 	1    8200 4750
 	1    0    0    -1  
 $EndComp
+Wire Bus Line
+	10750 4600 10750 5750
+Wire Bus Line
+	9200 4300 9200 5750
 $EndSCHEMATC
