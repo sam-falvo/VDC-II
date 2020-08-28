@@ -1,5 +1,11 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP Conn_02x06_Top_Bottom
+D Generic connector, double row, 02x06, top/bottom pin numbering scheme (row 1: 1...pins_per_row, row2: pins_per_row+1 ... num_pins), script generated (kicad-library-utils/schlib/autogen/connector/)
+K connector
+F ~
+$ENDCMP
+#
 $CMP Conn_RC40_Male
 D Generic connector, single row, 01x40, script generated (kicad-library-utils/schlib/autogen/connector/)
 K connector
@@ -16,6 +22,12 @@ $CMP SN74LVC8T245PWR
 D 8-Bit Dual-Supply Bus Transceiver With Configurable Voltage Translation and 3-State Outputs, TSSOP-24
 K Noninverting Bidirectional
 F https://www.ti.com/lit/ds/symlink/sn74avc8t245.pdf
+$ENDCMP
+#
+$CMP VideoMezzanine14
+D Generic connector, double row, 02x07, counter clockwise pin numbering scheme (similar to DIP packge numbering), script generated (kicad-library-utils/schlib/autogen/connector/)
+K connector
+F ~
 $ENDCMP
 #
 #End Doc Library

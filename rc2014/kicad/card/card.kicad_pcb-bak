@@ -268,7 +268,7 @@
   )
 
   (module Connector_Dsub:DSUB-15-HD_Female_Horizontal_P2.29x1.98mm_EdgePinOffset8.35mm_Housed_MountingHolesOffset10.89mm (layer F.Cu) (tedit 59FEDEE2) (tstamp 5EDCDC44)
-    (at 78.994 84.328 90)
+    (at 119.888 85.852 90)
     (descr "15-pin D-Sub connector, horizontal/angled (90 deg), THT-mount, female, pitch 2.29x1.98mm, pin-PCB-offset 8.35mm, distance of mounting holes 25mm, distance of mounting holes to PCB edge 10.889999999999999mm, see https://disti-assets.s3.amazonaws.com/tonar/files/datasheets/16730.pdf")
     (tags "15-pin D-Sub connector horizontal angled 90deg THT female pitch 2.29x1.98mm pin-PCB-offset 8.35mm mounting-holes-distance 25mm mounting-hole-offset 25mm")
     (path /5EE66251)
@@ -772,7 +772,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5ED73AC8)
-    (at 65.532 60.452 180)
+    (at 96.657001 124.949001)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5EFF1550)
@@ -801,9 +801,9 @@
     (fp_line (start 8.23 1.25) (end 8.23 -1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 1.25) (end 8.23 1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 -1.25) (end 1.93 1.25) (layer F.Fab) (width 0.1))
-    (pad 2 thru_hole oval (at 10.16 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 2 thru_hole oval (at 10.16 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 48 "Net-(J3-Pad4)"))
-    (pad 1 thru_hole circle (at 0 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 1 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 42 "Net-(J2-Pad3)"))
     (model ${KISYS3DMOD}/Resistor_THT.3dshapes/R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal.wrl
       (at (xyz 0 0 0))
@@ -813,7 +813,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5ED73AB1)
-    (at 65.532 56.896 180)
+    (at 109.967001 120.899001)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5EFF154A)
@@ -842,9 +842,9 @@
     (fp_line (start 8.23 1.25) (end 8.23 -1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 1.25) (end 8.23 1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 -1.25) (end 1.93 1.25) (layer F.Fab) (width 0.1))
-    (pad 2 thru_hole oval (at 10.16 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 2 thru_hole oval (at 10.16 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 46 "Net-(J3-Pad9)"))
-    (pad 1 thru_hole circle (at 0 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 1 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 42 "Net-(J2-Pad3)"))
     (model ${KISYS3DMOD}/Resistor_THT.3dshapes/R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal.wrl
       (at (xyz 0 0 0))
@@ -854,7 +854,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5ED73A9A)
-    (at 78.486 67.31 180)
+    (at 96.657001 120.899001)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5EFDC8B0)
@@ -883,9 +883,9 @@
     (fp_line (start 8.23 1.25) (end 8.23 -1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 1.25) (end 8.23 1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 -1.25) (end 1.93 1.25) (layer F.Fab) (width 0.1))
-    (pad 2 thru_hole oval (at 10.16 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 2 thru_hole oval (at 10.16 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 45 "Net-(J3-Pad10)"))
-    (pad 1 thru_hole circle (at 0 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 1 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 43 "Net-(J2-Pad2)"))
     (model ${KISYS3DMOD}/Resistor_THT.3dshapes/R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal.wrl
       (at (xyz 0 0 0))
@@ -895,7 +895,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5ED73A83)
-    (at 78.486 64.008 180)
+    (at 109.967001 116.849001)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5EFDB8B0)
@@ -924,9 +924,9 @@
     (fp_line (start 8.23 1.25) (end 8.23 -1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 1.25) (end 8.23 1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 -1.25) (end 1.93 1.25) (layer F.Fab) (width 0.1))
-    (pad 2 thru_hole oval (at 10.16 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 2 thru_hole oval (at 10.16 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 50 "Net-(J3-Pad2)"))
-    (pad 1 thru_hole circle (at 0 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 1 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 43 "Net-(J2-Pad2)"))
     (model ${KISYS3DMOD}/Resistor_THT.3dshapes/R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal.wrl
       (at (xyz 0 0 0))
@@ -936,7 +936,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5ED73A6C)
-    (at 78.486 60.452 180)
+    (at 96.657001 116.849001)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5EFDAE9F)
@@ -965,9 +965,9 @@
     (fp_line (start 8.23 1.25) (end 8.23 -1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 1.25) (end 8.23 1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 -1.25) (end 1.93 1.25) (layer F.Fab) (width 0.1))
-    (pad 2 thru_hole oval (at 10.16 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 2 thru_hole oval (at 10.16 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 49 "Net-(J3-Pad3)"))
-    (pad 1 thru_hole circle (at 0 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 1 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 44 "Net-(J2-Pad1)"))
     (model ${KISYS3DMOD}/Resistor_THT.3dshapes/R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal.wrl
       (at (xyz 0 0 0))
@@ -977,7 +977,7 @@
   )
 
   (module Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal (layer F.Cu) (tedit 5AE5139B) (tstamp 5ED73A55)
-    (at 78.486 56.896 180)
+    (at 116.057001 112.799001)
     (descr "Resistor, Axial_DIN0207 series, Axial, Horizontal, pin pitch=10.16mm, 0.25W = 1/4W, length*diameter=6.3*2.5mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf")
     (tags "Resistor Axial_DIN0207 series Axial Horizontal pin pitch 10.16mm 0.25W = 1/4W length 6.3mm diameter 2.5mm")
     (path /5EF8BC4D)
@@ -1006,9 +1006,9 @@
     (fp_line (start 8.23 1.25) (end 8.23 -1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 1.25) (end 8.23 1.25) (layer F.Fab) (width 0.1))
     (fp_line (start 1.93 -1.25) (end 1.93 1.25) (layer F.Fab) (width 0.1))
-    (pad 2 thru_hole oval (at 10.16 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 2 thru_hole oval (at 10.16 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 47 "Net-(J3-Pad8)"))
-    (pad 1 thru_hole circle (at 0 0 180) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
+    (pad 1 thru_hole circle (at 0 0) (size 1.6 1.6) (drill 0.8) (layers *.Cu *.Mask)
       (net 44 "Net-(J2-Pad1)"))
     (model ${KISYS3DMOD}/Resistor_THT.3dshapes/R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal.wrl
       (at (xyz 0 0 0))
@@ -1568,7 +1568,7 @@
   )
 
   (module Capacitor_THT:C_Disc_D6.0mm_W4.4mm_P5.00mm (layer F.Cu) (tedit 5AE50EF0) (tstamp 5ED738E3)
-    (at 61.722 65.024 270)
+    (at 81.026 73.406 270)
     (descr "C, Disc series, Radial, pin pitch=5.00mm, , diameter*width=6*4.4mm^2, Capacitor")
     (tags "C Disc series Radial pin pitch 5.00mm  diameter 6mm width 4.4mm Capacitor")
     (path /5EA5A502)
