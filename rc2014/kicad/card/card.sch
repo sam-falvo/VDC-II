@@ -41,7 +41,7 @@ U 1 1 5E832137
 P 2300 2500
 F 0 "SW1" H 2300 3167 50  0000 C CNN
 F 1 "SW_DIP_x07" H 2300 3076 50  0000 C CNN
-F 2 "Package_DIP:DIP-14_W10.16mm" H 2300 2500 50  0001 C CNN
+F 2 "Button_Switch_THT:SW_DIP_SPSTx07_Slide_9.78x19.96mm_W7.62mm_P2.54mm" H 2300 2500 50  0001 C CNN
 F 3 "~" H 2300 2500 50  0001 C CNN
 	1    2300 2500
 	1    0    0    -1  
@@ -918,12 +918,12 @@ Wire Wire Line
 Wire Wire Line
 	10300 4900 10650 4900
 $Comp
-L card:VideoMezzanine14 J2
+L Connector_Generic:Conn_02x07_Odd_Even J2
 U 1 1 5F4F0374
 P 10000 4800
 F 0 "J2" H 10050 5317 50  0000 C CNN
 F 1 "VideoMezzanine14" H 10050 5226 50  0000 C CNN
-F 2 "Package_DIP:DIP-14_W7.62mm_Socket" H 10000 4800 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_2x07_P2.54mm_Vertical" H 10000 4800 50  0001 C CNN
 F 3 "~" H 10000 4800 50  0001 C CNN
 	1    10000 4800
 	1    0    0    -1  
