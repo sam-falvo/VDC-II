@@ -40,11 +40,11 @@ class VDC_II_Chip(TinyFPGABXPlatform):
             Attrs(IO_STANDARD="LVCMOS"),
         ),
         Resource("video", 0,
-            Subsignal("hsync", Pins("H9", dir="o")),
-            Subsignal("vsync", Pins("D9", dir="o")),
-            Subsignal("blu", Pins("D8 C9", dir="o")),
-            Subsignal("grn", Pins("A9 B8", dir="o")),
-            Subsignal("red", Pins("A8 B7", dir="o")),
+            Subsignal("red", Pins("H9 D9 D8", dir="o")),
+            Subsignal("grn", Pins("C9 A9 B8", dir="o")),
+            Subsignal("blu", Pins("A8 B7 A7", dir="o")),
+            Subsignal("hsync", Pins("B6", dir="o")),
+            Subsignal("vsync", Pins("A6", dir="o")),
         ),
     ]
 
@@ -208,9 +208,11 @@ class Top(Elaboratable):
             ## Outputs
             video.hsync.o.eq(vdc2.hs),
             video.vsync.o.eq(vdc2.vs),
-            video.blu.o.eq(Cat(vdc2.i, vdc2.b)),
-            video.grn.o.eq(Cat(vdc2.i, vdc2.g)),
-            video.red.o.eq(Cat(vdc2.i, vdc2.r)),
+            ### TODO: Replace this with a color mapper module
+            ### with a set of 16 palette registers.
+            video.blu.o.eq(Cat(vdc2.b, vdc2.i, vdc2.b)),
+            video.grn.o.eq(Cat(vdc2.g, vdc2.i, vdc2.g)),
+            video.red.o.eq(Cat(vdc2.r, vdc2.i, vdc2.r)),
 
             hostbus.vblank_i.eq(vdc2.raw_vs),
         ]
